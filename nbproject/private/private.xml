@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group name="midrange">
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/config/Config.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/SequentalLogProcessor.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/parsers/ParallelLogSplitter.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/parsers/IPvXAddrParser.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/exceptions/T004BadDataException.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/LogGenerator.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/entities/LogStats.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/test/me/megov/emc/t004/parsers/IPvXAddrParserTest.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/Main.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/entities/IPvXTuple.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/entities/Customer.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/entities/LogLine.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/CustomerGenerator.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/parsers/LogLineParser.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/config/ConfigParam.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/exceptions/T004FormatException.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/entities/CustomerLine.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/LogProcessor.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/test/me/megov/emc/t004/entities/CustomerTest.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/helpers/CustomerTreePrinter.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/ParallelLogProcessor.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/parsers/CustomerParser.java</file>
+            <file>file:/home/megov/_svnroot/midrange-test-004/src/me/megov/emc/t004/exceptions/T004Exception.java</file>
+        </group>
+    </open-files>
+</project-private>

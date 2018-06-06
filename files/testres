@@ -1,0 +1,17 @@
+
+....LOG GENERATION
+Done in 762658 millis, got 200 010 806 log lines
+
+
+
+Starting with config: DEFAULT
+Using me.megov.emc.t004.SequentalLogProcessor
+Using data directory: /data
+Using output directory: /data
+Reading customer tree from /home/megov/__DATA/customers.txt
+Done reading in 587 millis, got 70 450 customers
+Reading log from /home/megov/__DATA/log.txt
+Done reading log in 376964 millis, got 200 010 806 log lines
+Got 42 495 customer records for 1 000 000 000 000 bytes
+Writing results to /home/megov/__DATA/report.txt
+
