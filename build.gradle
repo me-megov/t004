@@ -1,9 +1,11 @@
 apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'me.megov.emc.t004.Main';
 
 repositories {
     mavenCentral()
 }
-
 
 
 sourceSets {
@@ -28,3 +30,10 @@ dependencies {
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
 }
+
+task generate { 
+    doLast { 
+        println 'Hello, World!'
+    }
+}
+
