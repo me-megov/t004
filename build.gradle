@@ -4,6 +4,27 @@ repositories {
     mavenCentral()
 }
 
+
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+
+    test {
+	java {
+	    srcDir 'test'
+	}
+    }
+}
+
+
+dependencies {
+  testCompile 'junit:junit:4.12'
+}
+
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
 }
