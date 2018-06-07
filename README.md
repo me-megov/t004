@@ -47,21 +47,23 @@ Log processor is the main part of application. Its usage:
     - paramValue - value of a parameter, overriding configuration file
 
 Parameters with default values:
-    --dataDir=/data              - Directory for data files (customers, log)
-    --customerFile=customers.txt - Customers definition filename
-    --logFile=log.txt            - Traffic log filename
-    --outputDir=/data            - Output directory for report
-    --outputFile=report.txt      - Report filename
-    --isDebug=1                  - Enable (1) or disable (0) debug output
-    --reportInterval=1000000     - Progress reporting interval (in processed records)
-    --taskCount=2                - Task count for parallel processing
-    --logProcessor=PAR           - Log processor (SEQ-sequental, PAR-parallel)
-    --logProcessorTask=FCH       - Parallel Log processor task class:
-            	    BUF 		- buffered segmented log analyzer
-		    FCH			- NIO ByteBuffer segmented log analyzer
-		    MMAP 		- MemoryMapped segmented log analyzer
+    - --dataDir=/data              - Directory for data files (customers, log)
+    - --customerFile=customers.txt - Customers definition filename
+    - --logFile=log.txt            - Traffic log filename
+    - --outputDir=/data            - Output directory for report
+    - --outputFile=report.txt      - Report filename
+    - --isDebug=1                  - Enable (1) or disable (0) debug output
+    - --reportInterval=1000000     - Progress reporting interval (in processed records)
+    - --taskCount=2                - Task count for parallel processing
+    - --logProcessor=PAR           - Log processor (SEQ-sequental, PAR-parallel)
+    - --logProcessorTask=FCH       - Parallel Log processor task class:
+    *        	    BUF 		- buffered segmented log analyzer
+    *		    FCH			- NIO ByteBuffer segmented log analyzer
+    *		    MMAP 		- MemoryMapped segmented log analyzer
 
-Configuration file contains named parameter/value pairs, parameters names are specified without 
+Config
+
+uration file contains named parameter/value pairs, parameters names are specified without 
 double-dashes. In command line any parameter are prefixed with '--' and character '='
 delimits parameter name and parameter value. Any parameter, provided in command line is
 overwrite the same parameter from configuration file.
