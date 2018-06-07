@@ -24,14 +24,40 @@ sourceSets {
 
 
 dependencies {
-  testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.12'
 }
 
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
 }
 
-task generate { 
+
+task generateLarge(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.MainGenerator';
+  args = ["/data", "100", "1000000000000"]
+}
+
+task generateSmall(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.MainGenerator';
+  args = ["/data", "10", "10000000000"]
+}
+
+task runSequental(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["me.megov.emc.t004.SequentalLogProcessor"]
+}
+
+task runParallel(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["me.megov.emc.t004.ParallelLogProcessor"]
+}
+
+
+task hello { 
     doLast { 
         println 'Hello, World!'
     }

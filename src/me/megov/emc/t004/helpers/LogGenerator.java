@@ -47,7 +47,7 @@ public class LogGenerator {
                 fullAddr = _network + host;
             }
 
-            if ((_debugOut != null) && ((counter % (_unknownAddrRate*100))==0) ) {
+            if ((_debugOut != null) && ((counter % (_debugLogRate))==0) ) {
                     _debugOut.println("..." + counter + " lines and " + remainBytes + " bytes remaining");
             }
             

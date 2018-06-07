@@ -24,8 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.List;
-import me.megov.emc.t004.config.Config;
-import me.megov.emc.t004.config.ConfigParam;
 import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.helpers.CustomerGenerator;
 import me.megov.emc.t004.helpers.CustomerTreeHelper;
@@ -37,11 +35,12 @@ import me.megov.emc.t004.helpers.LogGenerator;
  */
 public class MainGenerator {
 
-    private static DecimalFormat df = new DecimalFormat("#,##0");
-    public static final int DEFAULT_TOP_CUSTOMERS_COUNT = 500;
-    public static final long DEFAULT_TOTAL_LOG_TRAFFIC_BYTES = 1L * 1000 * 1000 * 1000 * 1000 ;
+    private static final DecimalFormat df = new DecimalFormat("#,##0");
+    //public static final int DEFAULT_TOP_CUSTOMERS_COUNT = 500;
+    //public static final long DEFAULT_TOTAL_LOG_TRAFFIC_BYTES = 1L * 1000 * 1000 * 1000 * 1000 ;
     public static final int DEFAULT_MAX_BYTES_PER_LOG_LINE = 10000;
     public static final int DEFAULT_COMPLETELY_RANDOM_ADDR_RATE = 100;
+    public static final int DEFAULT_PROGRESS_REPORT = 1000000;
 
     public static List<String> generateCustomers(int _custCount, Path _outputFile, PrintStream _debugOut) throws T004Exception, IOException {
         long ctStart = System.currentTimeMillis();
@@ -50,9 +49,10 @@ public class MainGenerator {
         Files.write(_outputFile, custStrings, Charset.defaultCharset());
         long ctEnd = System.currentTimeMillis();
             System.out.println(
-                    String.format("Done in %d millis, got %s customers",
+                    String.format("Done in %d millis, got %s customers, file size %s",
                     ctEnd - ctStart,
-                    df.format(custStrings.size()))
+                    df.format(custStrings.size()),
+                    df.format(_outputFile.toFile().length()))
             );
         return custStrings;
     }
@@ -68,16 +68,18 @@ public class MainGenerator {
                     CustomerGenerator.START_V4_NETWORK,
                     CustomerGenerator.START_V4_NETMASK_BITS,
                     DEFAULT_COMPLETELY_RANDOM_ADDR_RATE,
-                    1000000,
+                    DEFAULT_PROGRESS_REPORT,
                     ps,
                     _debugOut
             );
             ps.flush();
             long ctEnd = System.currentTimeMillis();
             System.out.println(
-                    String.format("Done in %d millis, got %s log lines",
+                    String.format("Done in %d millis, got %s log lines, log file size %s",
                     ctEnd - ctStart,
-                    df.format(totalLines))
+                    df.format(totalLines),
+                    df.format(_outputFile.toFile().length())
+                    )
             );
             return totalLines;
         } finally {
@@ -88,25 +90,27 @@ public class MainGenerator {
 
     public static void main(String[] args) {
         String outputDirectory;
-        int custCount = DEFAULT_TOP_CUSTOMERS_COUNT;
-        Config cfg = new Config();
+        int custCount;
+        long totalTraffic;
 
         try {
-            if (args.length > 0) {
-                outputDirectory = args[0];
-            } else {
-                outputDirectory = cfg.getValue(ConfigParam.DATADIR);
-            }
-
-            if (args.length > 1) {
-                custCount = Integer.parseInt(args[1]);
-            }
+            if (args.length != 3) {
+                System.err.println("Usage: ");
+                System.err.println("  java -cp <app.jar> me.megov.emc.t004 <>");
+                for (String s:args) System.err.println("ARG="+s);
+                System.exit(1);
+                return;
+            } 
+            
+            outputDirectory = args[0];
+            custCount = Integer.parseInt(args[1],10);
+            totalTraffic = Long.parseUnsignedLong(args[2], 10);
 
             Path custPath = Paths.get(outputDirectory, "customers.txt");
-            List<String> custStrings = generateCustomers(custCount, custPath, null);
+            generateCustomers(custCount, custPath, null);
 
             Path logPath = Paths.get(outputDirectory, "log.txt");
-            generateLog(DEFAULT_TOTAL_LOG_TRAFFIC_BYTES, logPath, System.out);
+            generateLog(totalTraffic, logPath, System.out);
 
         } catch (Throwable th) {
             System.err.println(th.getMessage());
