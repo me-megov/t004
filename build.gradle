@@ -44,6 +44,12 @@ task generateSmall(type: JavaExec) {
   args = ["/data", "10", "10000000000"]
 }
 
+task generateMiddle(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.MainGenerator';
+  args = ["/data", "10", "100000000000"]
+}
+
 task runSequental(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';

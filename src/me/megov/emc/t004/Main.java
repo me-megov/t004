@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,11 +98,12 @@ public class Main {
         return custroot;
     }
 
-    private static void storeOutput(Map<String,Long> _result, 
+    private static long storeOutput(Map<String,Long> _result, 
                                     String _dataDir, 
                                     String _fileName,
                                     LogStats _stats) throws Exception {
         long soStart = System.currentTimeMillis();
+        long totalTraffic = _stats.getTotalUnknownTraffic();
         File resultfile = new File(_dataDir, _fileName);
         File tempfile = new File(_dataDir, _fileName+".tmp");
         System.out.println("Writing results to " + resultfile.getCanonicalPath());
@@ -116,6 +116,7 @@ public class Main {
             Collections.sort(keys);
             for (String custName:keys) {
                 Long bytes = _result.get(custName);
+                totalTraffic+=bytes;
                 bw.println(custName+" "+bytes.toString());
             }
             bw.println("UNKNOWN "+_stats.getTotalUnknownTraffic());
@@ -124,6 +125,7 @@ public class Main {
             bw.close();
         }
         tempfile.renameTo(resultfile);  
+        return totalTraffic;
     }
     
     public static void main(String[] args) {
@@ -139,7 +141,6 @@ public class Main {
         if (args.length > 1) {
             cfgFileName = args[1];
         }
-        
 
         System.out.println("Starting with config: " + (cfgFileName == null ? "DEFAULT" : cfgFileName));
         System.out.println("Using " + logProcessorName);
@@ -171,12 +172,12 @@ public class Main {
                     System.out
                     );
             
-            storeOutput(result, 
+            long totalTraffic = storeOutput(result, 
                     cfg.getValue(ConfigParam.OUTPUTDIR),
                     cfg.getValue(ConfigParam.OUTPUTFILE),
                     stats
                     );
-            
+            System.out.println("Total traffic accounted: " + DF.format(totalTraffic));
 
         } catch (Throwable th) {
             System.err.println(th.getMessage());

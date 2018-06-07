@@ -17,8 +17,16 @@ package me.megov.emc.t004;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import me.megov.emc.t004.entities.Customer;
+import me.megov.emc.t004.entities.LogSegment;
 import me.megov.emc.t004.entities.LogStats;
 import me.megov.emc.t004.parsers.LogSplitter;
 
@@ -29,6 +37,9 @@ import me.megov.emc.t004.parsers.LogSplitter;
 public class ParallelLogProcessor implements LogProcessor {
     
     private LogSplitter logSplitter = new LogSplitter();
+    
+    private static int EXEC_COUNT = 4;
+    private static final int REPORT_PERIOD = 1000000;
 
     @Override
     public long process(File _logFile, 
@@ -36,7 +47,45 @@ public class ParallelLogProcessor implements LogProcessor {
                         Map<String, Long> _result, 
                         LogStats _stats,
                         PrintStream _debugOut) throws Exception {
-        logSplitter.analyze(_logFile, 5, _debugOut);
+        
+        List<LogSegment> segments = logSplitter.analyze(_logFile, EXEC_COUNT, _debugOut);
+        
+        ExecutorService es = Executors.newFixedThreadPool(EXEC_COUNT);
+        List<Future<Map <String,Long>>> workerList = new ArrayList<>();
+        for (LogSegment segment: segments.toArray(new LogSegment[]{}) ) {
+            workerList.add(
+                    es.submit(
+                            new ParallelLogProcessorTask(
+                                    String.format("T%08X",segment.getStartPos()),
+                                    _logFile,
+                                    segment,
+                                    REPORT_PERIOD,
+                                    _debugOut)
+                    )
+            );
+        }
+        //
+        es.shutdown();
+        try {
+            while (es.awaitTermination(10, TimeUnit.SECONDS)==false)
+            {
+                int iterm=0;
+                for (Future<Map <String,Long>> future:workerList) {
+                    if (future.isDone()) {
+                        try {
+                            future.get();
+                        } catch (ExecutionException ex) {
+                            throw ex;
+                        }
+                        iterm++;
+                    }
+                }
+            }
+        } catch (InterruptedException  ex) {
+            throw ex;
+        } finally {
+            es.shutdownNow();
+        }
         return 0;
     }
     

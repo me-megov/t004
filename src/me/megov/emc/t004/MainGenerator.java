@@ -96,7 +96,8 @@ public class MainGenerator {
         try {
             if (args.length != 3) {
                 System.err.println("Usage: ");
-                System.err.println("  java -cp <app.jar> me.megov.emc.t004 <>");
+                System.err.println("  java -cp <app.jar> me.megov.emc.t004.Maingenerator <outputDir> <topCustomersCount> <totalTrafficInBytes>");
+                System.err.println("  The app will generate a random customer tree with ");
                 for (String s:args) System.err.println("ARG="+s);
                 System.exit(1);
                 return;

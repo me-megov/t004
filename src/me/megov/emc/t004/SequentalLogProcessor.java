@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.util.Map;
 import me.megov.emc.t004.entities.Customer;
 import me.megov.emc.t004.entities.LogLine;
@@ -45,6 +46,7 @@ public class SequentalLogProcessor implements LogProcessor {
         LogLineParser logParser = new LogLineParser();
         FileReader fr = new FileReader(_logFile);
         BufferedReader logReader = new BufferedReader(fr);
+        //RandomAccessFile logReader = new RandomAccessFile(_logFile, "r");
         _result.clear();
         try {
             String line;
@@ -53,7 +55,7 @@ public class SequentalLogProcessor implements LogProcessor {
                 LogLine logLine = logParser.parseLine(lines+1, line);
                 lines+=1L;  
                 totalTraffic+=logLine.getByteCount();
-                Customer cust = _custroot.getCustomerByAddr(logLine.getAddr());
+                Customer cust = null; // _custroot.getCustomerByAddr(logLine.getAddr());
                 if (cust!=null) {
                     Long nowTraffic = _result.get(cust.getName());
                     if (nowTraffic==null) nowTraffic = logLine.getByteCount();
