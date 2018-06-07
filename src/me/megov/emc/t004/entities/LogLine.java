@@ -15,7 +15,6 @@
  */
 package me.megov.emc.t004.entities;
 
-import me.megov.emc.t004.parsers.IPvXAddrParser;
 import me.megov.emc.t004.exceptions.T004Exception;
 
 /**

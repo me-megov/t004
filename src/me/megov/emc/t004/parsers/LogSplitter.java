@@ -15,14 +15,12 @@
  */
 package me.megov.emc.t004.parsers;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import me.megov.emc.t004.entities.LogProcessorParams;
 import me.megov.emc.t004.entities.LogSegment;
 import static me.megov.emc.t004.helpers.FmtHelper.DF;
 
@@ -32,36 +30,50 @@ import static me.megov.emc.t004.helpers.FmtHelper.DF;
  */
 public class LogSplitter {
     
-    public LogSplitter() {
-    }
-    
-    public List<LogSegment> analyze(File _logFile, int _partsCount, PrintStream _ps) throws Exception {
-        List<LogSegment> segments = new ArrayList<>(_partsCount);
-        try (RandomAccessFile raf = new RandomAccessFile(_logFile, "r")) {
-            long logLength = _logFile.length();
-            long baseSegmentSize = logLength/_partsCount;
+    private static final int NOSPLIT_LIMIT_KB = 1;//256;
+     
+    public static List<LogSegment> analyze(LogProcessorParams _params) throws Exception {
+        List<LogSegment> segments = new ArrayList<>(_params.getTaskCount());
+        try (RandomAccessFile raf = new RandomAccessFile(_params.getLogFile(), "r")) {
+            long logLength = raf.length();
+            long baseSegmentSize = logLength/_params.getTaskCount();
+            
+            //check minimum limit to split log
+            if (logLength<_params.getTaskCount()*NOSPLIT_LIMIT_KB*1024) {
+                baseSegmentSize = logLength;
+            }
         
-            if (_ps!=null) {
-                _ps.println("Log size: "+DF.format(logLength)+" baseSegmentSize: "+DF.format(baseSegmentSize));
+            if (_params.isDebug()) {
+                _params.getDebugOut().println("Log size: "+DF.format(logLength)+" baseSegmentSize: "+DF.format(baseSegmentSize));
             }
 
             long startSegmentPos = 0 ;
+            long correctedEndSegnmentPos;
+            long correctedSegmentSize;
+            
             while (startSegmentPos<logLength) {
-                raf.seek(startSegmentPos+baseSegmentSize);
-                raf.readLine();
-                long correctedEndSegnmentPos = raf.getFilePointer();
-                long correctedSegmentSize = correctedEndSegnmentPos-startSegmentPos;
+                long newPosition = startSegmentPos+baseSegmentSize;
+                if (raf.length()>newPosition) {
+                    raf.seek(newPosition);
+                    raf.readLine();
+                    correctedEndSegnmentPos = raf.getFilePointer();
+                    correctedSegmentSize = correctedEndSegnmentPos-startSegmentPos;
+                } else {
+                    correctedEndSegnmentPos = raf.length();
+                    correctedSegmentSize = correctedEndSegnmentPos-startSegmentPos;
+                }
                 segments.add(new LogSegment(startSegmentPos, correctedSegmentSize));
                 startSegmentPos+=correctedSegmentSize;
             }
         
-            if (_ps!=null) {
+            if (_params.isDebug()) {
                 for (LogSegment seg:segments) {
-                    _ps.println(seg.toString());
+                    _params.getDebugOut().println(seg.toString());
                 }
             }
             
         }
+        
         return segments;
     }
     

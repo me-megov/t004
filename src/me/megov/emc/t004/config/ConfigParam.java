@@ -23,12 +23,19 @@ import me.megov.emc.t004.exceptions.T004FormatException;
  * @author megov
  */
 public enum ConfigParam {
-
-    DATADIR(        "DATADIR",      "/data",            "Directory for data files (customers, log)"),
-    CUSTOMERFILE(   "CUSTOMERFILE", "customers.txt",    "Customers definition filename"),
-    LOGFILE(        "LOGFILE",      "log.txt",          "Traffic log filename"),
-    OUTPUTDIR(      "OUTPUTDIR",    "/data",            "Output directory for report "),
-    OUTPUTFILE(     "OUTPUTFILE",   "report.txt",       "Report filename");
+    
+    DATADIR(            "dataDir",        "/data",            "Directory for data files (customers, log)"),
+    CUSTOMERFILE(       "customerFile",   "customers.txt",    "Customers definition filename"),
+    LOGFILE(            "logFile",        "log.txt",          "Traffic log filename"),
+    OUTPUTDIR(          "outputDir",      "/data",            "Output directory for report "),
+    OUTPUTFILE(         "outputFile",     "report.txt",       "Report filename"),
+    IS_DEBUG(           "isDebug",        "1",                "Enable debug output (=1)"),
+    REPORT_INTERVAL(    "reportInterval", "1000000",          "Progress reporting interval (in processed records)"),
+    TASK_COUNT(         "taskCount",      "2",                "Task count for parallel processing"),
+    LOG_PROCESSOR(      "logProcessor",    "PAR",             "Log processor (SEQ, PAR)"),
+    LOG_PROCESSOR_TASK( "logProcessorTask","FCH",              "Parallel Log processor task class (BUF, MMAP)"),
+    ;
+    
 
     private final static HashMap<String, ConfigParam> paramLookupByName = new HashMap<>(5);
 

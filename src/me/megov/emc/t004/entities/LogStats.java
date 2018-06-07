@@ -25,6 +25,13 @@ public class LogStats {
     private long totalTraffic = 0L;
     private long totalUnknownTraffic = 0L;
     private int totalCustomersCount = 0;
+    
+    public void merge(LogStats _stats) {
+        totalLines+=_stats.getTotalLines();
+        totalTraffic+=_stats.getTotalTraffic();
+        totalUnknownTraffic+=_stats.getTotalUnknownTraffic();
+        totalCustomersCount+=_stats.getTotalCustomersCount();
+    }
 
     /**
      * @return the totalLines

@@ -3,6 +3,10 @@ apply plugin: 'application'
 
 mainClassName = 'me.megov.emc.t004.Main';
 
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'me.megov.emc.t004.Main'
+}
+
 repositories {
     mavenCentral()
 }
@@ -32,34 +36,64 @@ dependencies {
 }
 
 
-task generateLarge(type: JavaExec) {
+task genLarge(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.MainGenerator';
   args = ["/data", "100", "1000000000000"]
 }
 
-task generateSmall(type: JavaExec) {
+task genSmall(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.MainGenerator';
-  args = ["/data", "10", "10000000000"]
+  args = ["/data", "2", "10000000"]
 }
 
-task generateMiddle(type: JavaExec) {
+task genMid(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.MainGenerator';
   args = ["/data", "10", "100000000000"]
 }
 
-task runSequental(type: JavaExec) {
+task runSeq(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["me.megov.emc.t004.SequentalLogProcessor"]
+  args = ["--logProcessor=SEQ"]
 }
 
-task runParallel(type: JavaExec) {
+task runPar1(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["me.megov.emc.t004.ParallelLogProcessor"]
+  args = ["--logProcessor=PAR", "--logProcessorTask=FCH", "--taskCount=1" ]
+}
+
+task runPar2(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=FCH", "--taskCount=2" ]
+}
+
+task runPar4(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=FCH", "--taskCount=4" ]
+}
+
+task runPar8(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=FCH", "--taskCount=8" ]
+}
+
+task runPar12(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=FCH", "--taskCount=12" ]
+}
+
+task runMMap(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=MMAP"]
 }
 
 

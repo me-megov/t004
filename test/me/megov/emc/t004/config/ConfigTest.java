@@ -36,11 +36,17 @@ public class ConfigTest {
     
     public static List<String> completeTestConfig = new ArrayList<>(Arrays.asList(
             new String[] {
-                    "DATADIR                /testdata",
-                    "CUSTOMERFILE             testcustomers.txt",
-                    "LOGFILE              testlog.txt",
-                    "OUTPUTDIR      /testoutput",
-                    "OUTPUTFILE     testreport.txt"
+                    "dataDir                /testdata",
+                    "customerFile             testcustomers.txt",
+                    "logFile              testlog.txt",
+                    "outputDir      /testoutput",
+                    "outputFile     testreport.txt",
+                    "isDebug   1" ,
+                    "reportInterval 1000000",
+                    "taskCount 12",
+                    "logProcessor PAR",
+                    "logProcessorTask MMAP"
+                    
                 }));
     
     public static List<String> badTestConfig0 = new ArrayList<>(Arrays.asList(

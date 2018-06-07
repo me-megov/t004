@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.megov.emc.t004;
+package me.megov.emc.t004.logprocessors;
 
-import java.io.File;
-import java.io.PrintStream;
-import java.util.Map;
-import me.megov.emc.t004.entities.Customer;
-import me.megov.emc.t004.entities.LogStats;
+import me.megov.emc.t004.entities.LogProcessorParams;
+import me.megov.emc.t004.entities.LogProcessorResult;
 
 /**
  *
@@ -27,10 +24,6 @@ import me.megov.emc.t004.entities.LogStats;
  */
 public interface LogProcessor {
     
-    public long process(File _logFile, 
-                        Customer _custroot, 
-                        Map <String,Long> _result, 
-                        LogStats _stats,
-                        PrintStream _debugOut) throws Exception;
+    public LogProcessorResult process(LogProcessorParams _params) throws Exception;
     
 }

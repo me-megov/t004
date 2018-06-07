@@ -72,7 +72,19 @@ public class Config {
         completeConfigDefaults();
     }
     
-
+    public void mergeCmdLine(String[] _cmdLine) throws T004FormatException {
+        for (String s:_cmdLine) {
+            if (s.startsWith("--")) {
+                String[] arr = s.split("=");
+                if (arr.length!=2) throw new T004FormatException("Bad cmdline parameter: "+s);
+                arr[0] = arr[0].replaceFirst("--", "");
+                String cp = params.get(arr[0]);
+                if (cp==null) throw new T004FormatException("Cmdline parameter: "+arr[0]+" not found");
+                params.put(arr[0],arr[1]);
+                }
+        }
+    }
+        
     private void completeConfigDefaults() {
         for (ConfigParam paramEnum : values()) {
             if (params.get(paramEnum.getName()) == null) {
@@ -80,7 +92,7 @@ public class Config {
             }
         }
     }
-
+    
     private void processConfigLine(int lineNum, String line) throws T004FormatException {
         Matcher mat = CFG_PATTERN.matcher(line);
         if ((!mat.matches()) || (mat.groupCount() != 2)) {
@@ -99,7 +111,16 @@ public class Config {
         } else {
             return val;
         }
-
     }
+    
+    public int getIntValue(ConfigParam _param) throws T004FormatException {
+        String val = getValue(_param);
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException ex) {
+            throw new T004FormatException("Invalid int parameter " + _param.getName(),ex);
+        }
+    }
+    
 
 }
