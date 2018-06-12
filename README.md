@@ -130,12 +130,12 @@ Parameters with their default values:
  - --taskCount=2                - Task count for parallel processing
  - --logProcessor=SEQ           - Log processor (SEQ-sequental, PAR-parallel)
  - --logProcessorTask=BUF       - Log processor task class:
-  - BUF 		- buffered sequental/segmented log processing
-  - NIO			- NIO ByteBuffer segmented log processing
-  - MMAP 		- MemoryMapped segmented log processing (UNIMPLEMENTED)
+  + BUF 		- buffered sequental/segmented log processing
+  + NIO			- NIO ByteBuffer segmented log processing
+  + MMAP 		- MemoryMapped segmented log processing (UNIMPLEMENTED)
  - --logProcessorLookup=TRM     - Log processor lookup table
-  - TRM 		- Guava's TreeRangeMap
-  - AUT			- Own's implementation of augmented binary tree
+  + TRM 		- Guava's TreeRangeMap
+  + AUT			- Own's implementation of augmented binary tree
 
 There log processing options are also have their appropriate Gradle task names:
  - runSeq - one thread, buffered sequential processing, TRM lookup
