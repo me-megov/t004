@@ -57,38 +57,75 @@ task genMid(type: JavaExec) {
 task runSeq(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["--logProcessor=SEQ"]
+  args = ["--logProcessor=SEQ", "--logProcessorLookup=TRM" ]
+}
+
+task runSeqAut(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=SEQ", "--logProcessorLookup=AUT" ]
 }
 
 task runPar1(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--taskCount=1" ]
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=TRM", "--taskCount=1" ]
 }
 
 task runPar2(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--taskCount=2" ]
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=TRM", "--taskCount=2" ]
 }
 
 task runPar4(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--taskCount=4" ]
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=TRM", "--taskCount=4" ]
 }
 
 task runPar8(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--taskCount=8" ]
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=TRM", "--taskCount=8" ]
 }
 
 task runPar12(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
-  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--taskCount=12" ]
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=TRM", "--taskCount=12" ]
 }
+
+task runPar1Aut(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=AUT", "--taskCount=1" ]
+}
+
+task runPar2Aut(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=AUT", "--taskCount=2" ]
+}
+
+task runPar4Aut(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=AUT", "--taskCount=4" ]
+}
+
+task runPar8Aut(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=AUT", "--taskCount=8" ]
+}
+
+task runPar12Aut(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=PAR", "--logProcessorTask=NIO", "--logProcessorLookup=AUT", "--taskCount=12" ]
+}
+
 
 task runMMap(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath

@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  */
 public class IPvXAddrParserTest {
     
-    public static final String[] ipv4GoodStrings = new String[]{
+    public static final String[] IPV4_GOOD_STRINGS = new String[]{
         "192.168.0.16",
         "192.168.0.1",
         "8.8.8.8",
@@ -40,7 +40,7 @@ public class IPvXAddrParserTest {
         "255.255.255.255"
     };
 
-    public static final String[] ipv4BadStrings = new String[]{
+    public static final String[] IPV4_BAD_STRINGS = new String[]{
         "192.168.0.277",
         "192.168..1",
         "8.8.8.Z",
@@ -54,7 +54,7 @@ public class IPvXAddrParserTest {
     //be specified without leading zeroes in digit groups and with hex numbers 
     //in ay case. Compressed forms with :: also supported. Mixed semicolon
     //and dotted notation for "v4 in v6" range are NOT SUPPORTED!!!
-    public static final String[] ipv6GoodStrings = new String[]{
+    public static final String[] IPV6_GOOD_STRINGS = new String[]{
         "::",
         "::1",        
         "FF01::101",
@@ -73,7 +73,7 @@ public class IPvXAddrParserTest {
         "2001:DB8::CD30:0:0:0:0"
     };
 
-    public static final String[] ipv6BadStrings = new String[]{
+    public static final String[] IPV6_BAD_STRINGS = new String[]{
         "ABCD:EF01:2345:6789:ABCD:EF01:2345:6789:9999",
         "2001:DB8Z:0:0:8:800:200C:417A",
         "FF01:0::0:0::0:101",
@@ -130,14 +130,14 @@ public class IPvXAddrParserTest {
     @Test
     public void stringTestV4() throws Exception {
         System.out.println("IPvXAddr: string v4 test");
-        for (String s : ipv4GoodStrings) {
+        for (String s : IPV4_GOOD_STRINGS) {
             IPvXAddrParser addr = new IPvXAddrParser(s);
             assertEquals(true, addr.getAddr().isV4Addr());
             System.out.println("IPvXAddr: " + s + "=" + addr.toString());
             assertEquals(true, s.equals(addr.toString()));
         }
 
-        for (String s : ipv4BadStrings) {
+        for (String s : IPV4_BAD_STRINGS) {
             try {
                 IPvXAddrParser addr = new IPvXAddrParser(s);
                 assertEquals(false, true);
@@ -151,13 +151,13 @@ public class IPvXAddrParserTest {
     @Test
     public void stringTestV6() throws Exception {
         System.out.println("IPvXAddr: string v6 test");
-        for (String s : ipv6GoodStrings) {
+        for (String s : IPV6_GOOD_STRINGS) {
             IPvXAddrParser addr = new IPvXAddrParser(s);
             assertEquals(false, addr.getAddr().isV4Addr());
             System.out.println("IPvXAddr: " + s + "=" + addr.toString());
             //assertEquals(true, s.toUpperCase().equals(addr.toString()));
         }
-        for (String s : ipv6BadStrings) {
+        for (String s : IPV6_BAD_STRINGS) {
             try {
                 IPvXAddrParser addr = new IPvXAddrParser(s);
                 assertEquals(false, true);

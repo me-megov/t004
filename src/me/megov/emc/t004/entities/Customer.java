@@ -15,12 +15,10 @@
  */
 package me.megov.emc.t004.entities;
 
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import me.megov.emc.t004.exceptions.T004BadDataException;
@@ -35,53 +33,56 @@ public class Customer {
     
     private final String name;
     private final Map<String,Customer> subCustomers = new HashMap();
-    private final RangeMap<IPvXTuple,Customer> subCustomersRanges = TreeRangeMap.create();
+    private final RangeLookupFactory lookupFactory;
+    private RangeLookup lookup = null;
     
-    public static Customer getRootCustomer()
+  
+    public static Customer getRootCustomer(RangeLookupFactory _lookupFactory)
     {
         if (_root==null) {
-            _root = new Customer("");
+            _root = new Customer("",_lookupFactory);
         }
         return _root;
     };
-     
-    public Customer(String _name) {
+    
+    public Customer(String _name, RangeLookupFactory _lookupFactory) {
         this.name = _name;
+        this.lookupFactory = _lookupFactory;
+        this.lookup = _lookupFactory.getNewLookup();
     }
 
     public String getName() {
         return name;
     }
     
-    public Customer getCustomerByAddr(IPvXTuple _addr) {
-        Entry<Range<IPvXTuple>,Customer> custRanges = subCustomersRanges.getEntry(_addr);
-        if (custRanges==null) {
+    public Customer getCustomerByAddr(IPvXTuple _addr) throws T004BadDataException {
+        Customer custByRange = lookup.getEntry(_addr);
+        if (custByRange==null) {
             return null;
         } else {
-            Customer subCust = custRanges.getValue().getCustomerByAddr(_addr);
+            Customer subCust = custByRange.getCustomerByAddr(_addr);
             if (subCust!=null) return subCust;
-            else return custRanges.getValue();
+            else return custByRange;
         }
     }
-    
     
     public void addSubCustomer(CustomerLine _line) throws T004BadDataException {
         String newCustName = _line.getName();
         Customer subCustomer = subCustomers.get(newCustName);
-        Entry<Range<IPvXTuple>,Customer> custRanges = subCustomersRanges.getEntry(_line.getLowerAddr());
+        Customer custByRange = lookup.getEntry(_line.getLowerAddr());
         if (subCustomer==null) {
-            if (custRanges==null) {
+            if (custByRange==null) {
                 //no subcustomer, nor ranges - add new sibling here
-                Customer newCustomer = new Customer(newCustName);
+                Customer newCustomer = new Customer(newCustName, lookupFactory);
                 subCustomers.put(_line.getName(), newCustomer);
-                subCustomersRanges.put(_line.getNetRange(), newCustomer);
+                lookup.put(_line.getNetRange(), newCustomer);
             } else {
                 //no subcustomer, but have range - add as a dependent customer
-                Customer parentCustomer = custRanges.getValue();
-                parentCustomer.addSubCustomer(_line);
+                custByRange.addSubCustomer(_line);
             }
         } else {
-            subCustomersRanges.putCoalescing(_line.getNetRange(), subCustomer);
+            //subCustomersRanges.putCoalescing(_line.getNetRange(), subCustomer);
+            lookup.put(_line.getNetRange(), subCustomer);
         }
     }
     

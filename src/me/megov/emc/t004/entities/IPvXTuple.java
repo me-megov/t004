@@ -32,6 +32,12 @@ public class IPvXTuple implements Comparable<IPvXTuple> {
         this.hi = _hi;
         this.lo = _lo;
     }
+    
+    public IPvXTuple(IPvXTuple _tu) {
+        this.hi = _tu.hi;
+        this.lo = _tu.lo;
+    }
+    
 
     /**
      * @return the hi

@@ -18,7 +18,6 @@ package me.megov.emc.t004.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import me.megov.emc.t004.exceptions.T004FormatException;
 import org.junit.After;
@@ -26,7 +25,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

@@ -32,8 +32,9 @@ public enum ConfigParam {
     IS_DEBUG(           "isDebug",        "1",                "Enable debug output (=1)"),
     REPORT_INTERVAL(    "reportInterval", "1000000",          "Progress reporting interval (in processed records)"),
     TASK_COUNT(         "taskCount",      "2",                "Task count for parallel processing"),
-    LOG_PROCESSOR(      "logProcessor",    "PAR",             "Log processor (SEQ, PAR)"),
-    LOG_PROCESSOR_TASK( "logProcessorTask","NIO",             "Parallel Log processor task class (BUF, NIO, MMAP)"),
+    LOG_PROCESSOR(      "logProcessor",    "SEQ",             "Log processor (SEQ, PAR)"),
+    LOG_PROCESSOR_TASK( "logProcessorTask","BUF",             "Parallel Log processor task implementation (BUF, NIO, MMAP)"),
+    LOG_PROCESSOR_LOOKUP( "logProcessorLookup","TRM",         "Log processor lookup implementation (TRM, AUT)"),
     ;
     
 

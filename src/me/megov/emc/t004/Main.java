@@ -31,6 +31,7 @@ import me.megov.emc.t004.entities.Customer;
 import me.megov.emc.t004.entities.CustomerLine;
 import me.megov.emc.t004.entities.LogProcessorParams;
 import me.megov.emc.t004.entities.LogProcessorResult;
+import me.megov.emc.t004.entities.RangeLookupFactory;
 import me.megov.emc.t004.exceptions.T004FormatException;
 import static me.megov.emc.t004.helpers.FmtHelper.DF;
 import me.megov.emc.t004.logprocessors.ParallelLogProcessor;
@@ -45,12 +46,7 @@ import me.megov.emc.t004.parsers.CustomerParser;
  * @author megov
  * 
  * TODO:
- *  + ParallelLogProcessor with splitting log by N parts and processing in different threads
- *  + Generators - for generating really big files to test
- *  + sorting by netmask or some other way to ensure proper relations in customers
- *  - Fix IPv6 in Range or migrate to InetAddr/byte[]/BigInt/ByteBuffer
  *  - add tests to other modules
- *  + missing unknown customers counting = NullPointerException
  *  - profiling for memory and speed(?)
  * 
  * UNIMPLEMENTED:
@@ -87,14 +83,16 @@ public class Main {
         return lpResult;
     }
     
-    private static Customer readCustomerTree(String _dataDir, String _fileName) throws Exception {
+    private static Customer readCustomerTree(String _dataDir, 
+                                             String _fileName, 
+                                             RangeLookupFactory _lookupFactory) throws Exception {
         long ctStart = System.currentTimeMillis();
         File custfile = new File(_dataDir, _fileName);
         System.out.println("Reading customer tree from " + custfile.getCanonicalPath());
         if (!(custfile.exists() && custfile.isFile())) {
             throw new IOException("No customer file: " + _fileName);
         }
-        Customer custroot = Customer.getRootCustomer();
+        Customer custroot = Customer.getRootCustomer(_lookupFactory);
         CustomerParser custParser = new CustomerParser();
         BufferedReader custReader = new BufferedReader(new FileReader(custfile));
         List<CustomerLine> listCl = custParser.readFrom(custReader);
@@ -162,14 +160,24 @@ public class Main {
             
             String logProcessorName = cfg.getValue(ConfigParam.LOG_PROCESSOR);
             String logProcessorTaskName = cfg.getValue(ConfigParam.LOG_PROCESSOR_TASK);
+            String logProcessorLookupName = cfg.getValue(ConfigParam.LOG_PROCESSOR_LOOKUP);
+
             String dataDir = cfg.getValue(ConfigParam.DATADIR);
             String outDir = cfg.getValue(ConfigParam.OUTPUTDIR);
           
             Class logProcessorClass;
             Class logProcessorTaskClass = null;
+            RangeLookupFactory lookupFactory = new TreeRangeMapLookupFactory();
+            
+            if ("TRM".equals(logProcessorLookupName)) {
+                lookupFactory = new TreeRangeMapLookupFactory();
+            } else {
+                lookupFactory = new AugmentedTreeLookupFactory();
+            }
             
             if ("SEQ".equals(logProcessorName)) {
                 logProcessorClass = SequentalLogProcessor.class;
+                logProcessorTaskName = "BUF";
             } else if ("PAR".equals(logProcessorName)) {
                 logProcessorClass = ParallelLogProcessor.class;
                 if ("BUF".equals(logProcessorTaskName)) {
@@ -185,12 +193,15 @@ public class Main {
                 throw new T004FormatException("Bad log processor in config: "+logProcessorName);
             }
 
-            System.out.println("Using log processor "+logProcessorName+":"+logProcessorTaskName);
+            System.out.println("Using log processor:"+logProcessorName+
+                               ", log fetcher task:"+logProcessorTaskName+
+                               ", log lookup:"+logProcessorLookupName);
             System.out.println("Using data directory: " + dataDir);
             System.out.println("Using output directory: " + outDir);
             
             Customer custRoot = readCustomerTree(dataDir,
-                    cfg.getValue(ConfigParam.CUSTOMERFILE)
+                    cfg.getValue(ConfigParam.CUSTOMERFILE),
+                    lookupFactory
             );
             
             LogProcessor lp = (LogProcessor)logProcessorClass.newInstance();

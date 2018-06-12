@@ -35,9 +35,8 @@ import me.megov.emc.t004.helpers.LogGenerator;
  */
 public class MainGenerator {
 
-    private static final DecimalFormat df = new DecimalFormat("#,##0");
-    //public static final int DEFAULT_TOP_CUSTOMERS_COUNT = 500;
-    //public static final long DEFAULT_TOTAL_LOG_TRAFFIC_BYTES = 1L * 1000 * 1000 * 1000 * 1000 ;
+    private static final DecimalFormat DF = new DecimalFormat("#,##0");
+
     public static final int DEFAULT_MAX_BYTES_PER_LOG_LINE = 10000;
     public static final int DEFAULT_COMPLETELY_RANDOM_ADDR_RATE = 100;
     public static final int DEFAULT_PROGRESS_REPORT = 1000000;
@@ -51,15 +50,15 @@ public class MainGenerator {
             System.out.println(
                     String.format("Done in %d millis, got %s customers, file size %s",
                     ctEnd - ctStart,
-                    df.format(custStrings.size()),
-                    df.format(_outputFile.toFile().length()))
+                    DF.format(custStrings.size()),
+                    DF.format(_outputFile.toFile().length()))
             );
         return custStrings;
     }
 
     public static long generateLog(long _totalTraffic, Path _outputFile, PrintStream _debugOut) throws T004Exception, FileNotFoundException {
         long ctStart = System.currentTimeMillis();
-        System.out.println("Generating " + df.format(_totalTraffic) + " bytes traffic to " + _outputFile.toString());
+        System.out.println("Generating " + DF.format(_totalTraffic) + " bytes traffic to " + _outputFile.toString());
         LogGenerator lg = new LogGenerator();
         PrintStream ps = new PrintStream(_outputFile.toFile());
         try {
@@ -77,8 +76,8 @@ public class MainGenerator {
             System.out.println(
                     String.format("Done in %d millis, got %s log lines, log file size %s",
                     ctEnd - ctStart,
-                    df.format(totalLines),
-                    df.format(_outputFile.toFile().length())
+                    DF.format(totalLines),
+                    DF.format(_outputFile.toFile().length())
                     )
             );
             return totalLines;

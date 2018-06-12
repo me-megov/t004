@@ -16,7 +16,6 @@
 package me.megov.emc.t004.entities;
 
 import me.megov.emc.t004.parsers.IPvXAddrParser;
-import com.google.common.collect.Range;
 import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.exceptions.T004FormatException;
 
@@ -64,8 +63,8 @@ public class CustomerLine {
     /**
      * @return the ipaddrRange
      */
-    public Range<IPvXTuple> getNetRange() {
-        return Range.closed(lowerAddr,upperAddr);
+    public IPvXRange getNetRange() {
+        return new IPvXRange(lowerAddr, upperAddr);
     }    
 
     /**
