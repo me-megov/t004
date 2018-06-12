@@ -19,8 +19,9 @@ definitions. So, test data generator is a 'must have' tool.
 ## Usage
 
 The generator usage:
-
+```
 java -cp <test.jar> <mainClass> <dataDir> <topCustCount> <trafficInBytes>
+```
  - test.jar - full or relative path to compiled application JAR
  - mainClass = me.megov.emc.t004.MainGenerator
  - dataDir - full or relative path to output directory for generated test data
@@ -44,8 +45,9 @@ the main log analyzer engine. The 'small' test case is really small (<100k), the
 test case produce >300Mb log, the 'Large' - >3.5Gb log.
 
 Log processor is the main part of application. Its usage:
-
+```
 java -cp <test.jar> <mainClass> [--cfgFile=<configFile>] [--<paramName>=<paramValue>]
+```
  - test.jar - full or relative path to compiled application JAR
  - mainClass = me.megov.emc.t004.Main
  - configFile - full or relative path to config file
