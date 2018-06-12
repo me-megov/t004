@@ -1,5 +1,7 @@
 # t004 - test exercise
 
+## Overview
+
 This code was written to complete T004 exercise. It was developed with Java8 x64,
 using Netbeans 8.1 as IDE and Gradle 2.14 as a build system.
 
@@ -14,13 +16,16 @@ parts in application: a traffic log analyzer and a test data generator. The log 
 must process huge amounts of data in both aspects: traffic log size and customer network
 definitions. So, test data generator is a 'must have' tool.
 
+## Usage
+
 The generator usage:
- java -cp <test.jar> <mainClass> <dataDir> <topCustCount> <trafficInBytes>
-    - test.jar - full or relative path to compiled application JAR
-    - mainClass = me.megov.emc.t004.MainGenerator
-    - dataDir - full or relative path to output directory for generated test data
-    - topCustCount - number of top-level customers
-    - trafficInBytes - total traffic in bytes for all test data
+
+java -cp <test.jar> <mainClass> <dataDir> <topCustCount> <trafficInBytes>
+ - test.jar - full or relative path to compiled application JAR
+ - mainClass = me.megov.emc.t004.MainGenerator
+ - dataDir - full or relative path to output directory for generated test data
+ - topCustCount - number of top-level customers
+ - trafficInBytes - total traffic in bytes for all test data
 
 There are three generator profiles, that have their appropriate Gradle task names:
  - genSmall - 2 top-level customers, 10Mb of traffic
@@ -39,32 +44,33 @@ the main log analyzer engine. The 'small' test case is really small (<100k), the
 test case produce >300Mb log, the 'Large' - >3.5Gb log.
 
 Log processor is the main part of application. Its usage:
- java -cp <test.jar> <mainClass> [--cfgFile=<configFile>] [--<paramName>=<paramValue>]
-    - test.jar - full or relative path to compiled application JAR
-    - mainClass = me.megov.emc.t004.Main
-    - configFile - full or relative path to config file
-    - paramName - name of a parameter, overriding configuration file
-    - paramValue - value of a parameter, overriding configuration file
+
+java -cp <test.jar> <mainClass> [--cfgFile=<configFile>] [--<paramName>=<paramValue>]
+ - test.jar - full or relative path to compiled application JAR
+ - mainClass = me.megov.emc.t004.Main
+ - configFile - full or relative path to config file
+ - paramName - name of a parameter, overriding configuration file
+ - paramValue - value of a parameter, overriding configuration file
 
 Parameters with default values:
 
-    - --dataDir=/data              - Directory for data files (customers, log)
-    - --customerFile=customers.txt - Customers definition filename
-    - --logFile=log.txt            - Traffic log filename
-    - --outputDir=/data            - Output directory for report
-    - --outputFile=report.txt      - Report filename
-    - --isDebug=1                  - Enable (1) or disable (0) debug output
-    - --reportInterval=1000000     - Progress reporting interval (in processed records)
-    - --taskCount=2                - Task count for parallel processing
-    - --logProcessor=PAR           - Log processor (SEQ-sequental, PAR-parallel)
-    - --logProcessorTask=NIO       - Parallel Log processor task class:
-    *        	    BUF 		- buffered segmented log analyzer
-    *		    NIO			- NIO ByteBuffer segmented log analyzer
-    *		    MMAP 		- MemoryMapped segmented log analyzer
+ - --dataDir=/data              - Directory for data files (customers, log)
+ - --customerFile=customers.txt - Customers definition filename
+ - --logFile=log.txt            - Traffic log filename
+ - --outputDir=/data            - Output directory for report
+ - --outputFile=report.txt      - Report filename
+ - --isDebug=1                  - Enable (1) or disable (0) debug output
+ - --reportInterval=1000000     - Progress reporting interval (in processed records)
+ - --taskCount=2                - Task count for parallel processing
+ - --logProcessor=PAR           - Log processor (SEQ-sequental, PAR-parallel)
+ - --logProcessorTask=NIO       - Parallel Log processor task class:
+  - BUF 		- buffered segmented log analyzer
+  - NIO			- NIO ByteBuffer segmented log analyzer
+  - MMAP 		- MemoryMapped segmented log analyzer
 
-Config
+## Configuration 
 
-uration file contains named parameter/value pairs, parameters names are specified without 
+Confiuration file contains named parameter/value pairs, parameters names are specified without 
 double-dashes. In command line any parameter are prefixed with '--' and character '='
 delimits parameter name and parameter value. Any parameter, provided in command line is
 overwrite the same parameter from configuration file.
@@ -78,7 +84,6 @@ and the simplest method to analyze traffic log. Yet not the slowest one.
 segments and process them in parallel with different approaches. Each segment 
 processing results are merged after task completion into total report file and produce
 total statistics record.
-
 
 Parallel log processing can be done with next methods:
 
@@ -98,7 +103,7 @@ There log processing also have their appropriate Gradle task names:
  - runPar[2,4,8,12] - two/four/eight/twelve parallel task processing with NIO
 
 
-IMPORTANT, BUT UNIMPLEMENTED YET:
+## IMPORTANT, BUT UNIMPLEMENTED YET:
  - IPv6. The stopping pit is that 128bit values in Long+Long class can't produce
 Guava's Range, and can't participate TreeRangeMap. Also there are no implementation
 of IPv6 generators and no parsing v4-into-v6 string representation with both colons
