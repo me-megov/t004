@@ -47,6 +47,7 @@ Log processor is the main part of application. Its usage:
     - paramValue - value of a parameter, overriding configuration file
 
 Parameters with default values:
+
     - --dataDir=/data              - Directory for data files (customers, log)
     - --customerFile=customers.txt - Customers definition filename
     - --logFile=log.txt            - Traffic log filename
@@ -56,9 +57,9 @@ Parameters with default values:
     - --reportInterval=1000000     - Progress reporting interval (in processed records)
     - --taskCount=2                - Task count for parallel processing
     - --logProcessor=PAR           - Log processor (SEQ-sequental, PAR-parallel)
-    - --logProcessorTask=FCH       - Parallel Log processor task class:
+    - --logProcessorTask=NIO       - Parallel Log processor task class:
     *        	    BUF 		- buffered segmented log analyzer
-    *		    FCH			- NIO ByteBuffer segmented log analyzer
+    *		    NIO			- NIO ByteBuffer segmented log analyzer
     *		    MMAP 		- MemoryMapped segmented log analyzer
 
 Config
@@ -85,8 +86,8 @@ Parallel log processing can be done with next methods:
 because of read ahead by BufferedReader. The real file read position into a segment
 are happens some time earlier, than real data was fetched to the processing.
 
-2. FCH/NIO - NIO/ByteBuffer low level approach. Suboptimal in char-by-char reading buffer,
-but have good parallelized results. Works.
+2. NIO - NIO/ByteBuffer low level approach. Have suboptimal char-by-char reading 
+fron the byte buffer procedure, but have good parallelized results. Works.
 
 3. MMAP - same as pt.2 but using memory mapping. Could be faster than NIO, but uncompleted
 and untested yet.

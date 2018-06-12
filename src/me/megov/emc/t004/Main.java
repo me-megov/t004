@@ -54,7 +54,6 @@ import me.megov.emc.t004.parsers.CustomerParser;
  *  - profiling for memory and speed(?)
  * 
  * UNIMPLEMENTED:
- *  - right cmdline parsing and parameter handling
  *  - IPv6 in RangeTree 
  *  - IPv6 in Generators
  *  - MemoryMap 
@@ -175,7 +174,7 @@ public class Main {
                 logProcessorClass = ParallelLogProcessor.class;
                 if ("BUF".equals(logProcessorTaskName)) {
                     logProcessorTaskClass = RandFileParallelLogProcessorTask.class;
-                } else if ("FCH".equals(logProcessorTaskName)) {
+                } else if ("NIO".equals(logProcessorTaskName)) {
                     logProcessorTaskClass = NioLogProcessorTask.class;
                 } else if ("MMAP".equals(logProcessorTaskName)) {
                     logProcessorTaskClass = MMapParallelLogProcessorTask.class;

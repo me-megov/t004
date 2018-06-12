@@ -33,7 +33,7 @@ public enum ConfigParam {
     REPORT_INTERVAL(    "reportInterval", "1000000",          "Progress reporting interval (in processed records)"),
     TASK_COUNT(         "taskCount",      "2",                "Task count for parallel processing"),
     LOG_PROCESSOR(      "logProcessor",    "PAR",             "Log processor (SEQ, PAR)"),
-    LOG_PROCESSOR_TASK( "logProcessorTask","FCH",              "Parallel Log processor task class (BUF, MMAP)"),
+    LOG_PROCESSOR_TASK( "logProcessorTask","NIO",             "Parallel Log processor task class (BUF, NIO, MMAP)"),
     ;
     
 
