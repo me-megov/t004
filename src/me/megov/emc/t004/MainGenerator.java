@@ -44,7 +44,7 @@ public class MainGenerator {
     public static List<String> generateCustomers(int _custCount, Path _outputFile, PrintStream _debugOut) throws T004Exception, IOException {
         long ctStart = System.currentTimeMillis();
         System.out.println("Generating " + _custCount + " top-customers to " + _outputFile.toString());
-        List<String> custStrings = CustomerTreeHelper.generateCustomerList(_custCount, _debugOut);
+        List<String> custStrings = CustomerTreeHelper.generateCustomerList(_custCount, 2*_custCount, _debugOut);
         Files.write(_outputFile, custStrings, Charset.defaultCharset());
         long ctEnd = System.currentTimeMillis();
             System.out.println(

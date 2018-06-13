@@ -176,17 +176,15 @@ public static String[] unorderedGoodCustometrs = new String[]{
     
     @Test
     public void testGeneratedCustomerTreeWithTRM() throws T004Exception {
-        Customer custroot = CustomerTreeHelper.generateCustomerTree(10, new Customer("", new TreeRangeMapLookupFactory()), System.out);
+        Customer custroot = CustomerTreeHelper.generateCustomerTree(10, 15, new Customer("", new TreeRangeMapLookupFactory()), System.out);
         checkCustomerTree(custroot);
     }
     
     @Test
     public void testGeneratedCustomerTreeWithAUT() throws T004Exception {
-        Customer custroot = CustomerTreeHelper.generateCustomerTree(10, new Customer("", new AugmentedTreeLookupFactory()), System.out);
+        Customer custroot = CustomerTreeHelper.generateCustomerTree(10, 15, new Customer("", new AugmentedTreeLookupFactory()), System.out);
         checkCustomerTree(custroot);
     }
-
-    
     
     public void checkCustomerTree(Customer custroot) throws T004Exception {
             boolean isBadTreeOrdering = false;

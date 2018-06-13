@@ -114,7 +114,15 @@ public class IPvXTuple implements Comparable<IPvXTuple> {
     public boolean isV4Addr() {
         return ((hi == 0L) && ((lo & (~IPv4Helper.IPV4_LO_MASK)) == IPv4Helper.IPV4_IN_V6_LOPREFIX));
     }
+    
+    public IPvXTuple maskWith(IPvXTuple v6mask) {
+        return new IPvXTuple(this.hi & v6mask.hi, this.lo & v6mask.lo);
+    }
 
+    public IPvXTuple orWithNot(IPvXTuple v6mask) {
+        return new IPvXTuple(this.hi | (~v6mask.hi), this.lo | (~v6mask.lo));
+    }
+    
     private IPvXTuple getV6BitMask(int _mask) throws T004BadDataException {
         if ((_mask < 0) || (_mask > 128)) {
             throw new T004BadDataException("getV6BitMask: Invalid bitmask " + _mask);

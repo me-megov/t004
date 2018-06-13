@@ -42,7 +42,8 @@ public class IPv4Helper {
         if ((_mask < 0) || (_mask > 32)) {
             throw new T004BadDataException("getV4BitMask: Invalid bitmask " + _mask);
         }
-        return 0xFFFFFFFF << (32 - _mask);
+        if (_mask>0) return 0xFFFFFFFF << (32 - _mask);
+        else return 0x0;
     }
 
     public static long toLowerBound(long v4addr, int _mask) throws T004BadDataException {
