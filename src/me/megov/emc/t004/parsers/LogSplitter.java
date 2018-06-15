@@ -15,8 +15,6 @@
  */
 package me.megov.emc.t004.parsers;
 
-import java.io.File;
-import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
