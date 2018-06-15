@@ -171,16 +171,15 @@ public static String[] unorderedGoodCustometrs = new String[]{
             System.out.println("Non-network boundary address - passed");
         }
         Customer root = iterateCustomerList(crossOverlappedCustometrs, new TreeRangeMapLookupFactory());
-
     }
     
-    @Test
+    //@Test
     public void testGeneratedCustomerTreeWithTRM() throws T004Exception {
         Customer custroot = CustomerTreeHelper.generateCustomerTree(10, 15, new Customer("", new TreeRangeMapLookupFactory()), System.out);
         checkCustomerTree(custroot);
     }
     
-    @Test
+    //@Test
     public void testGeneratedCustomerTreeWithAUT() throws T004Exception {
         Customer custroot = CustomerTreeHelper.generateCustomerTree(10, 15, new Customer("", new AugmentedTreeLookupFactory()), System.out);
         checkCustomerTree(custroot);

@@ -16,6 +16,7 @@
 package me.megov.emc.t004.helpers;
 
 import java.io.PrintStream;
+import me.megov.emc.t004.entities.IPvXTuple;
 import me.megov.emc.t004.exceptions.T004BadDataException;
 
 /**
@@ -41,10 +42,11 @@ public class LogGenerator {
 
         while (remainBytes > 0) {
             if ((counter % _unknownAddrRate) == 0) {
-                fullAddr = Math.round(Math.random() * IPv4Helper.IPV4_LO_MASK);
+                fullAddr = Math.round(Math.random() * IPvXTuple.IPV4_LO_MASK);
             } else {
-                long host = IPv4Helper.toHostPart(Math.round(Math.random() * IPv4Helper.getV4BitMask(_mask)),_mask);
+                long host = 0; //getHostPart(Math.round(Math.random() * IPvXTuple.getV4BitMask(_mask)),_mask);
                 fullAddr = _network + host;
+                throw new T004BadDataException("NEED TO REIMPLEMENT!");
             }
 
             if ((_debugOut != null) && ((counter % (_debugLogRate))==0) ) {
@@ -55,7 +57,7 @@ public class LogGenerator {
             if ((long) bytes > remainBytes) {
                 bytes = (int) remainBytes;
             }
-            _ps.println(IPv4Helper.getV4AddressString(fullAddr) + " " + bytes);
+            _ps.println(IPvXTuple.getV4AddressString(fullAddr) + " " + bytes);
             remainBytes -= bytes;
             counter++;
         }

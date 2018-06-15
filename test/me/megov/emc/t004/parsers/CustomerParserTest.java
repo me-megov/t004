@@ -8,6 +8,8 @@ package me.megov.emc.t004.parsers;
 import java.io.BufferedReader;
 import java.util.List;
 import me.megov.emc.t004.entities.CustomerLine;
+import me.megov.emc.t004.exceptions.T004Exception;
+import me.megov.emc.t004.exceptions.T004FormatException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -20,6 +22,15 @@ import static org.junit.Assert.*;
  * @author megov
  */
 public class CustomerParserTest {
+    
+    public String[] GOOD_CUSTOMER_LINE_STRINGS = new String[]{
+        "0.0.0.0/0 Customer0",
+    };
+    
+    public CustomerLine[] GOOD_CUSTOMER_LINES = new CustomerLine[]{
+        
+    };
+    
     
     public CustomerParserTest() {
     }
@@ -40,34 +51,27 @@ public class CustomerParserTest {
     public void tearDown() {
     }
 
-    /**
-     * Test of parseLine method, of class CustomerParser.
-     */
     @Test
     public void testParseLine() throws Exception {
-        System.out.println("parseLine");
-        int lineNum = 0;
-        String line = "";
-        CustomerParser instance = new CustomerParser();
-        CustomerLine expResult = null;
-        CustomerLine result = instance.parseLine(lineNum, line);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        System.out.println("parseLineV4");
+        CustomerParser p = new CustomerParser();
+        assertEquals(new CustomerLine("0.0.0.0", 0, "Customer"), 
+                p.parseLine(1, "0.0.0.0/0  Customer   "));
+        assertEquals(new CustomerLine("10.10.10.0", 24, "Customer10"), 
+                p.parseLine(1, "  10.10.10.0/24  Customer10   "));
+        assertEquals(new CustomerLine("23.23.23.23", 32, "Customer32"), 
+                p.parseLine(1, "23.23.23.23/32  Customer32   "));
+        try {
+            assertEquals(new CustomerLine("10.10.10.10", 24, "Customer10Bad"), 
+                p.parseLine(1, "  10.10.10.10/24  Customer10Bad   "));
+        } catch (T004FormatException ex) {
+            
+        }
     }
 
-    /**
-     * Test of netMaskSort method, of class CustomerParser.
-     */
     @Test
     public void testNetMaskSort() {
         System.out.println("netMaskSort");
-        List<CustomerLine> _in = null;
-        List<CustomerLine> expResult = null;
-        List<CustomerLine> result = CustomerParser.netMaskSort(_in);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -76,13 +80,6 @@ public class CustomerParserTest {
     @Test
     public void testReadFrom_List() throws Exception {
         System.out.println("readFrom");
-        List<String> _listCl = null;
-        CustomerParser instance = new CustomerParser();
-        List<CustomerLine> expResult = null;
-        List<CustomerLine> result = instance.readFrom(_listCl);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -91,13 +88,6 @@ public class CustomerParserTest {
     @Test
     public void testReadFrom_BufferedReader() throws Exception {
         System.out.println("readFrom");
-        BufferedReader _breader = null;
-        CustomerParser instance = new CustomerParser();
-        List<CustomerLine> expResult = null;
-        List<CustomerLine> result = instance.readFrom(_breader);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
     
 }

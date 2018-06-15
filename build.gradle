@@ -39,13 +39,14 @@ dependencies {
 task genLarge(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.MainGenerator';
-  args = ["/data", "100", "1000000000000"]
+  args = ["/data", "75", "1000000000000"]
 }
 
 task genSmall(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.MainGenerator';
-  args = ["/data", "2", "10000000"]
+  args = ["/data", "3", "10000000"]
+//  debug = true;
 }
 
 task genMid(type: JavaExec) {
@@ -57,6 +58,12 @@ task genMid(type: JavaExec) {
 task runSeq(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
+  args = ["--logProcessor=SEQ", "--logProcessorLookup=TRM" ]
+}
+
+task runZ(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'me.megov.emc.t004.MainV6Out';
   args = ["--logProcessor=SEQ", "--logProcessorLookup=TRM" ]
 }
 

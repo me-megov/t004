@@ -15,6 +15,7 @@
  */
 package me.megov.emc.t004.entities;
 
+import java.util.Objects;
 import me.megov.emc.t004.parsers.IPvXAddrParser;
 import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.exceptions.T004FormatException;
@@ -26,52 +27,77 @@ import me.megov.emc.t004.exceptions.T004FormatException;
 public class CustomerLine {
     
     private final String name;
-    private final IPvXAddrParser netAddr;
-    private final IPvXTuple lowerAddr;
-    private final IPvXTuple upperAddr;
+    private final IPvXTuple netAddr;
+    private final IPvXTuple lowerBound;
+    private final IPvXTuple upperBound;
     private final int mask;
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CustomerLine other = (CustomerLine) obj;
+        if (this.mask != other.mask) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.netAddr, other.netAddr)) {
+            return false;
+        }
+        if (!Objects.equals(this.lowerBound, other.lowerBound)) {
+            return false;
+        }
+        if (!Objects.equals(this.upperBound, other.upperBound)) {
+            return false;
+        }
+        return true;
+    }
     
     public CustomerLine(String _netAddr, int _mask, String _name) throws T004Exception {
         this.name = _name;
         this.mask = _mask;
-        this.netAddr = new IPvXAddrParser(_netAddr);
-        this.lowerAddr = this.netAddr.getAddr().getLowerAddr(mask);
-        if (!this.lowerAddr.equals(this.netAddr.getAddr())) {
-            throw new T004FormatException("Customer address "+_netAddr+" is not specifies network "+lowerAddr.toString());
+        this.netAddr = IPvXAddrParser.parseAddress(_netAddr);
+        this.lowerBound = this.netAddr.getLowerBound(mask);
+        if (!this.lowerBound.equals(this.netAddr)) {
+            throw new T004FormatException("Customer address "+_netAddr+" is not specifies network "+lowerBound.toString());
         }
-        this.upperAddr = this.netAddr.getAddr().getUpperAddr(mask);
+        this.upperBound = this.netAddr.getUpperBound(mask);
     }  
 
-    /**
-     * @return the name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @return the ipaddrRange
-     */
-    public IPvXTuple getLowerAddr() {
-        return lowerAddr;
+    public IPvXTuple getLowerBound() {
+        return lowerBound;
     }
     
-    public IPvXTuple getUpperAddr() {
-        return upperAddr;
+    public IPvXTuple getUpperBound() {
+        return upperBound;
     }
 
-    /**
-     * @return the ipaddrRange
-     */
     public IPvXRange getNetRange() {
-        return new IPvXRange(lowerAddr, upperAddr);
+        return new IPvXRange(lowerBound, upperBound);
     }    
 
-    /**
-     * @return the mask
-     */
     public int getMask() {
         return mask;
     }
+    
     
 }

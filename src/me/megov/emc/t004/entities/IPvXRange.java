@@ -51,4 +51,15 @@ public class IPvXRange {
         return "["+lowerBound+" - "+upperBound+"]";
     } 
     
+    public boolean isIntersectWith(IPvXRange _range) {
+        boolean isBefore = 
+                 (lowerBound.compareTo(_range.getLowerBound())>0) && 
+                 (lowerBound.compareTo(_range.getUpperBound())>0);
+        boolean isAfter = 
+                 (upperBound.compareTo(_range.getLowerBound())<0) && 
+                 (upperBound.compareTo(_range.getUpperBound())<0);
+        
+        return (!(isBefore||isAfter));
+    }
+    
 }

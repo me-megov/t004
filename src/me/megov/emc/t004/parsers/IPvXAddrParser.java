@@ -19,14 +19,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import me.megov.emc.t004.entities.IPvXTuple;
 import me.megov.emc.t004.exceptions.T004FormatException;
-import me.megov.emc.t004.helpers.IPv4Helper;
-import me.megov.emc.t004.helpers.IPv6Helper;
 
 /**
  *
  * @author megov
  */
-public class IPvXAddrParser implements Comparable<IPvXAddrParser> {
+public class IPvXAddrParser { //implements Comparable<IPvXAddrParser> 
 
     private static final String IPV4REGEXP = "^"
             + "(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)\\."
@@ -51,20 +49,20 @@ public class IPvXAddrParser implements Comparable<IPvXAddrParser> {
     private static final Pattern IPV6STDPATTERN = Pattern.compile(IPV6STDREGEXP);
     private static final Pattern IPV6COMPRESSEDPATTERN = Pattern.compile(IPV6COMPRESSEDREGEXP);
 
-    private IPvXTuple addr = new IPvXTuple(0, 0);
-    private boolean isCompressedV6 = false;
+//    private IPvXTuple addr = new IPvXTuple(0, 0);
+//    private boolean isCompressedV6 = false;
 
-    public IPvXAddrParser(long _hiAddr, long _loAddr) {
-        this.addr = new IPvXTuple(_hiAddr, _loAddr);
-    }
-        
-   public IPvXAddrParser(IPvXTuple _addr) {
-        this.addr = _addr;
-    }
+//    public IPvXAddrParser(long _hiAddr, long _loAddr) {
+//        this.addr = new IPvXTuple(_hiAddr, _loAddr);
+//    }
+//        
+//   public IPvXAddrParser(IPvXTuple _addr) {
+//        this.addr = _addr;
+//    }
     
-    public IPvXAddrParser(String _str) throws T004FormatException {
-        fetchAddress(_str);
-    }
+//    public IPvXAddrParser(String _str) throws T004FormatException {
+//        fetchAddress(_str);
+//    }
 
     
 /*
@@ -85,17 +83,16 @@ public class IPvXAddrParser implements Comparable<IPvXAddrParser> {
         return sb.toString();
     }
 */
-    private void fetchV4Address(Matcher _mat) {
+    public static IPvXTuple parseV4Address(Matcher _mat) {
         long v4Addr = 0;
         for (int i = 1; i <= 4; i++) {
             v4Addr <<= 8;
             v4Addr |= Integer.parseInt(_mat.group(i), 10);
         }
-        getAddr().setHi(0L);
-        getAddr().setLo((v4Addr & IPv4Helper.IPV4_LO_MASK) | IPv4Helper.IPV4_IN_V6_LOPREFIX);
+        return new IPvXTuple(0L, (v4Addr & IPvXTuple.IPV4_LO_MASK) | IPvXTuple.IPV4_IN_V6_LOPREFIX);
     }
 
-    private long fetchV6StdHalfAddress(Matcher _mat, int iStart, int iEnd) {
+    private static long parseV6StdHalfAddress(Matcher _mat, int iStart, int iEnd) {
         long v6half = 0;
         for (int i = iStart; i <= iEnd; i++) {
             v6half <<= 16;
@@ -104,14 +101,60 @@ public class IPvXAddrParser implements Comparable<IPvXAddrParser> {
         return v6half;
     }
 
-    private void fetchV6StdAddress(Matcher _mat) {
-        getAddr().setHi(fetchV6StdHalfAddress(_mat, 1, 4));
-        getAddr().setLo(fetchV6StdHalfAddress(_mat, 5, 8));
+    public static IPvXTuple parseV6StdAddress(Matcher _mat) {
+        return new IPvXTuple(parseV6StdHalfAddress(_mat, 1, 4),
+                             parseV6StdHalfAddress(_mat, 5, 8),
+                             0);
+    }
+    
+    private static IPvXTuple parseV6CompressedAddress(String _text, Matcher _mat) throws T004FormatException {
+        String[] arr = _text.split("::", -1);
+        String leftPart = arr[0];
+        String rightPart = arr[1];
+        int missMask = 0;
+//      if (leftPart.isEmpty() && rightPart.isEmpty()) {
+//          return new IPvXTuple(0L,0L, 0b11111111);
+//      }
+        String[] arrLeft = leftPart.split(":",-1);
+        String[] arrRight = rightPart.split(":",-1);
+        if ((arrLeft.length==1) && (arrLeft[0].isEmpty())) {
+            arrLeft = new String[0];
+        }
+        if ((arrRight.length==1) && (arrRight[0].isEmpty())) {
+            arrRight = new String[0];
+        }
+        int startCompress = 7-arrLeft.length; 
+        int endCompress = arrRight.length; 
+        
+        long hiAddr = 0;
+        long loAddr = 0;
+        
+        String sElem;
+        for (int i=7; i>=0; i--) {
+            if (i>startCompress) sElem = arrLeft[7-i];
+            else if (i<endCompress) sElem = arrRight[endCompress-i-1];
+            else {
+                sElem="0";
+                missMask|= 1 << i;
+                }
+            //hi
+            if (i>=4) {
+                hiAddr<<=16;
+                hiAddr|=Integer.parseInt(sElem, 16);
+            } 
+            //lo
+            else {
+                loAddr<<=16;
+                loAddr|=Integer.parseInt(sElem, 16);
+            }
+        }
+        return new IPvXTuple(hiAddr, loAddr, missMask);
     }
 
-    private void fetchV6CompressedAddress(Matcher _mat) throws T004FormatException {
+    private static IPvXTuple parseV6CompressedAddressOld(Matcher _mat) throws T004FormatException {
         String[] arr = _mat.group(0).split(":", -1);
         int arrLen = arr.length;
+        IPvXTuple addr = new IPvXTuple(0L, 0L, 0b11111111);
 
         //get missing digit groups count, covered by "::" token
         int missingGrpCnt = 0;
@@ -149,7 +192,7 @@ public class IPvXAddrParser implements Comparable<IPvXAddrParser> {
                 }
             }
         }
-        getAddr().setHi(v6Addr);
+        addr.setHi(v6Addr);
 
         v6Addr = 0;
         for (int i = 5; i <= 8; i++) {
@@ -168,48 +211,26 @@ public class IPvXAddrParser implements Comparable<IPvXAddrParser> {
                 }
             }
         }
-        getAddr().setLo(v6Addr);
+        addr.setLo(v6Addr);
+        return addr;
     }
 
-    private void fetchAddress(String _str) throws T004FormatException {
+    public static IPvXTuple parseAddress(String _str) throws T004FormatException {
         Matcher mat = IPV4PATTERN.matcher(_str);
         if (mat.matches() && (mat.groupCount() == 4)) {
-            fetchV4Address(mat);
-            return;
+            return parseV4Address(mat);
         } else {
             mat = IPV6STDPATTERN.matcher(_str);
             if (mat.matches() && (mat.groupCount() == 8)) {
-                fetchV6StdAddress(mat);
-                isCompressedV6 = false;
-                return;
+                return parseV6StdAddress(mat);
             } else {
                 mat = IPV6COMPRESSEDPATTERN.matcher(_str);
                 if (mat.matches()) {
-                    fetchV6CompressedAddress(mat);
-                    isCompressedV6 = true;
-                    return;
+                    return parseV6CompressedAddress(_str,mat);
                 }
             }
         }
         throw new T004FormatException("Invalid inet address: " + _str);
     }
-
-    @Override
-    public String toString() {
-       return addr.toString();
-    }
-
-    @Override
-    public int compareTo(IPvXAddrParser o) {
-        return addr.compareTo(o.getAddr());
-    }
-
-    /**
-     * @return the addr
-     */
-    public IPvXTuple getAddr() {
-        return addr;
-    }
-
 
 }

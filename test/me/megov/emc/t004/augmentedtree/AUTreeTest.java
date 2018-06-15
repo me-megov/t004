@@ -7,7 +7,7 @@ package me.megov.emc.t004.augmentedtree;
 
 import java.util.List;
 import me.megov.emc.t004.entities.IPvXTuple;
-import static me.megov.emc.t004.helpers.IPv4Helper.IPV4_IN_V6_LOPREFIX;
+import static me.megov.emc.t004.entities.IPvXTuple.IPV4_IN_V6_LOPREFIX;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

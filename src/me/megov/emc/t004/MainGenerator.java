@@ -107,7 +107,7 @@ public class MainGenerator {
             totalTraffic = Long.parseUnsignedLong(args[2], 10);
 
             Path custPath = Paths.get(outputDirectory, "customers.txt");
-            generateCustomers(custCount, custPath, null);
+            generateCustomers(custCount, custPath, System.out);
 
             Path logPath = Paths.get(outputDirectory, "log.txt");
             generateLog(totalTraffic, logPath, System.out);

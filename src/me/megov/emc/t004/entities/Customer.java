@@ -69,7 +69,7 @@ public class Customer {
     public void addSubCustomer(CustomerLine _line) throws T004BadDataException {
         String newCustName = _line.getName();
         Customer subCustomer = subCustomers.get(newCustName);
-        Customer custByRange = lookup.getEntry(_line.getLowerAddr());
+        Customer custByRange = lookup.getEntry(_line.getLowerBound());
         if (subCustomer==null) {
             if (custByRange==null) {
                 //no subcustomer, nor ranges - add new sibling here

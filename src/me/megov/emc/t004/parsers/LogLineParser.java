@@ -17,6 +17,7 @@ package me.megov.emc.t004.parsers;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import me.megov.emc.t004.entities.IPvXTuple;
 import me.megov.emc.t004.entities.LogLine;
 import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.exceptions.T004FormatException;
@@ -37,8 +38,8 @@ public class LogLineParser {
             if (!mat.matches() && (mat.groupCount()!=2)) {
                 throw new T004FormatException("Invalid log line format at line "+lineNum+". Log line: "+line);
             }
-            IPvXAddrParser netAddr = new IPvXAddrParser(mat.group(1));
-            return new LogLine(netAddr.getAddr(), 
+            IPvXTuple netAddr = IPvXAddrParser.parseAddress(mat.group(1));
+            return new LogLine(netAddr, 
                                Long.parseLong(mat.group(2),10));
         } catch (IllegalStateException | IndexOutOfBoundsException  ex) {
             throw new T004FormatException("Error parsing log at line "+lineNum+". Log line: "+line, ex);
