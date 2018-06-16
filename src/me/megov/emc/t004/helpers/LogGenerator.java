@@ -16,37 +16,44 @@
 package me.megov.emc.t004.helpers;
 
 import java.io.PrintStream;
+import java.util.List;
 import me.megov.emc.t004.entities.IPvXTuple;
+import me.megov.emc.t004.entities.IPvXTupleWithMask;
 import me.megov.emc.t004.exceptions.T004BadDataException;
 
 /**
  *
  * @author megov
  */
-public class LogGenerator {
+public class LogGenerator { 
 
     public LogGenerator() {
     }
 
     public long generateLog(long _totalBytes,
             int _maxBytesPerLine,
-            long _network,
-            int _mask,
+            List<IPvXTupleWithMask> _netList,
+            boolean _ipv4,
             int _unknownAddrRate,
             int _debugLogRate,
             PrintStream _ps,
             PrintStream _debugOut) throws T004BadDataException {
         long counter = 0;
-        long fullAddr;
+        IPvXTuple fullAddr;
         long remainBytes = _totalBytes;
 
         while (remainBytes > 0) {
-            if ((counter % _unknownAddrRate) == 0) {
-                fullAddr = Math.round(Math.random() * IPvXTuple.IPV4_LO_MASK);
-            } else {
-                long host = 0; //getHostPart(Math.round(Math.random() * IPvXTuple.getV4BitMask(_mask)),_mask);
-                fullAddr = _network + host;
-                throw new T004BadDataException("NEED TO REIMPLEMENT!");
+              if (_ipv4) {
+                    fullAddr = IPvXTuple.getV4RandomAddr();
+                } else {
+                    fullAddr = IPvXTuple.getV6RandomAddr();
+                }            
+            if ((counter % _unknownAddrRate) != 0) {
+                int idx = (int) Math.round(Math.random()*_netList.size()*1.2);
+                if (idx>=_netList.size()) idx = idx-_netList.size();
+                IPvXTupleWithMask gotAddr = _netList.get(idx);
+                IPvXTuple net = gotAddr.getAddr().getLowerBound(gotAddr.getMask());
+                fullAddr = net.orWith(fullAddr.getHostPart(gotAddr.getMask()));
             }
 
             if ((_debugOut != null) && ((counter % (_debugLogRate))==0) ) {
@@ -57,7 +64,7 @@ public class LogGenerator {
             if ((long) bytes > remainBytes) {
                 bytes = (int) remainBytes;
             }
-            _ps.println(IPvXTuple.getV4AddressString(fullAddr) + " " + bytes);
+            _ps.println(fullAddr.toString() + " " + bytes);
             remainBytes -= bytes;
             counter++;
         }

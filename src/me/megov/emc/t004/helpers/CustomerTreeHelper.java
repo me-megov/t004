@@ -16,12 +16,15 @@
 package me.megov.emc.t004.helpers;
 
 import java.io.PrintStream;
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import me.megov.emc.t004.entities.Customer;
 import me.megov.emc.t004.entities.CustomerLine;
+import me.megov.emc.t004.entities.IPvXTupleWithMask;
 import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.parsers.CustomerParser;
 
@@ -45,19 +48,36 @@ public class CustomerTreeHelper {
             printTree(ent.getValue(), _level + 1, _ps);
         }
     }
-
-    public static List<String> generateCustomerList(int _v4custCount, int _v6custCount, PrintStream _debugOut) throws T004Exception {
+ 
+    public static List<String> generateCustomerList(
+            int _v4custCount, 
+            int _v6custCount, 
+            List<IPvXTupleWithMask> _v4nelist,
+            List<IPvXTupleWithMask> _v6nelist,
+            PrintStream _debugOut) throws T004Exception {
         //Customer generator gives us ordered list, where parents always before childred
         //It can be wrong fot actual input file.
-        List<String> custStrings = new CustomerGenerator(_v4custCount, _v6custCount).generate(_debugOut);
+        List<String> custStrings = new CustomerGenerator(_v4custCount, _v6custCount)
+                .generate(_debugOut, _v4nelist, _v6nelist);
         //So to make things worse, we textually sort our customer list for to break
         //parent-child ordering.
         Collections.sort(custStrings);
         return custStrings;
     }
 
-    public static Customer generateCustomerTree(int _v4custCount, int _v6custCount, Customer _custRoot, PrintStream _debugOut) throws T004Exception {
-        return generateCustomerTree(generateCustomerList(_v4custCount, _v6custCount, _debugOut), _custRoot);
+    public static Customer generateCustomerTree(
+            int _v4custCount, 
+            int _v6custCount, 
+            Customer _custRoot, 
+            PrintStream _debugOut) throws T004Exception {
+        return generateCustomerTree(
+                generateCustomerList(
+                        _v4custCount, 
+                        _v6custCount,
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        _debugOut), 
+                _custRoot);
     }
 
     public static Customer generateCustomerTree(List<String> _custStrings, Customer _custroot) throws T004Exception {

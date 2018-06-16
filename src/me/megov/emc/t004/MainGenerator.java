@@ -23,7 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
+import me.megov.emc.t004.entities.IPvXTuple;
+import me.megov.emc.t004.entities.IPvXTupleWithMask;
 import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.helpers.CustomerGenerator;
 import me.megov.emc.t004.helpers.CustomerTreeHelper;
@@ -41,10 +44,21 @@ public class MainGenerator {
     public static final int DEFAULT_COMPLETELY_RANDOM_ADDR_RATE = 100;
     public static final int DEFAULT_PROGRESS_REPORT = 1000000;
 
-    public static List<String> generateCustomers(int _custCount, Path _outputFile, PrintStream _debugOut) throws T004Exception, IOException {
+    public static List<String> generateCustomers(
+            int _custCount, 
+            Path _outputFile, 
+            List<IPvXTupleWithMask> _v4netList,
+            List<IPvXTupleWithMask> _v6netList,
+            PrintStream _debugOut) throws T004Exception, IOException {
         long ctStart = System.currentTimeMillis();
         System.out.println("Generating " + _custCount + " top-customers to " + _outputFile.toString());
-        List<String> custStrings = CustomerTreeHelper.generateCustomerList(_custCount, 2*_custCount, _debugOut);
+        List<String> custStrings = CustomerTreeHelper
+                .generateCustomerList(
+                        _custCount, 
+                        _custCount, 
+                        _v4netList,
+                        _v6netList,
+                        _debugOut);
         Files.write(_outputFile, custStrings, Charset.defaultCharset());
         long ctEnd = System.currentTimeMillis();
             System.out.println(
@@ -56,16 +70,32 @@ public class MainGenerator {
         return custStrings;
     }
 
-    public static long generateLog(long _totalTraffic, Path _outputFile, PrintStream _debugOut) throws T004Exception, FileNotFoundException {
+    public static long generateLog(
+            long _totalTraffic, 
+            Path _outputFile, 
+            List<IPvXTupleWithMask> _v4netList,
+            List<IPvXTupleWithMask> _v6netList,
+            PrintStream _debugOut) throws T004Exception, FileNotFoundException {
         long ctStart = System.currentTimeMillis();
         System.out.println("Generating " + DF.format(_totalTraffic) + " bytes traffic to " + _outputFile.toString());
         LogGenerator lg = new LogGenerator();
         PrintStream ps = new PrintStream(_outputFile.toFile());
         try {
-            long totalLines = lg.generateLog(_totalTraffic,
+            long totalV4Traffic = _totalTraffic/2;
+            long totalV6Traffic = _totalTraffic-totalV4Traffic;
+            long totalLinesV4 = lg.generateLog(totalV4Traffic,
                     DEFAULT_MAX_BYTES_PER_LOG_LINE,
-                    CustomerGenerator.START_V4_NETWORK,
-                    CustomerGenerator.START_V4_NETMASK_BITS,
+                    _v4netList,
+                    true,
+                    DEFAULT_COMPLETELY_RANDOM_ADDR_RATE,
+                    DEFAULT_PROGRESS_REPORT,
+                    ps,
+                    _debugOut
+            );
+            long totalLinesV6 = lg.generateLog(totalV4Traffic,
+                    DEFAULT_MAX_BYTES_PER_LOG_LINE,
+                    _v6netList,
+                    false,
                     DEFAULT_COMPLETELY_RANDOM_ADDR_RATE,
                     DEFAULT_PROGRESS_REPORT,
                     ps,
@@ -76,11 +106,11 @@ public class MainGenerator {
             System.out.println(
                     String.format("Done in %d millis, got %s log lines, log file size %s",
                     ctEnd - ctStart,
-                    DF.format(totalLines),
+                    DF.format(totalLinesV4+totalLinesV6),
                     DF.format(_outputFile.toFile().length())
                     )
             );
-            return totalLines;
+            return totalLinesV4+totalLinesV6;
         } finally {
             ps.close();
         }
@@ -107,10 +137,12 @@ public class MainGenerator {
             totalTraffic = Long.parseUnsignedLong(args[2], 10);
 
             Path custPath = Paths.get(outputDirectory, "customers.txt");
-            generateCustomers(custCount, custPath, System.out);
+            ArrayList<IPvXTupleWithMask> v4netList = new ArrayList<>();
+            ArrayList<IPvXTupleWithMask> v6netList = new ArrayList<>();
+            generateCustomers(custCount, custPath, v4netList, v6netList, System.out);
 
             Path logPath = Paths.get(outputDirectory, "log.txt");
-            generateLog(totalTraffic, logPath, System.out);
+            generateLog(totalTraffic, logPath, v4netList, v6netList, System.out);
 
         } catch (Throwable th) {
             System.err.println(th.getMessage());

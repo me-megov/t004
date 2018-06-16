@@ -161,6 +161,7 @@ public class Main {
             String logProcessorName = cfg.getValue(ConfigParam.LOG_PROCESSOR);
             String logProcessorTaskName = cfg.getValue(ConfigParam.LOG_PROCESSOR_TASK);
             String logProcessorLookupName = cfg.getValue(ConfigParam.LOG_PROCESSOR_LOOKUP);
+            int taskCount = cfg.getIntValue(ConfigParam.TASK_COUNT);
 
             String dataDir = cfg.getValue(ConfigParam.DATADIR);
             String outDir = cfg.getValue(ConfigParam.OUTPUTDIR);
@@ -178,6 +179,7 @@ public class Main {
             if ("SEQ".equals(logProcessorName)) {
                 logProcessorClass = SequentalLogProcessor.class;
                 logProcessorTaskName = "BUF";
+                taskCount = 0;
             } else if ("PAR".equals(logProcessorName)) {
                 logProcessorClass = ParallelLogProcessor.class;
                 if ("BUF".equals(logProcessorTaskName)) {
@@ -216,7 +218,12 @@ public class Main {
             
             LogProcessorResult lpResult = processLog(lp, lpp);
             
-            long totalTraffic = storeOutput(outDir, cfg.getValue(ConfigParam.OUTPUTFILE),
+            long totalTraffic = storeOutput(
+                    outDir, 
+                    cfg.getValue(ConfigParam.OUTPUTFILE)+
+                            "."+logProcessorName+taskCount+
+                            "."+logProcessorTaskName+
+                            "."+logProcessorLookupName,
                     lpResult
                     );
             System.out.println("Total traffic accounted: " + DF.format(totalTraffic));

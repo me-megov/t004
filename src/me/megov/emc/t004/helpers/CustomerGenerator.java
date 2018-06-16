@@ -25,13 +25,13 @@ import java.util.Map;
 import me.megov.emc.t004.entities.Customer;
 import me.megov.emc.t004.entities.IPvXRange;
 import me.megov.emc.t004.entities.IPvXTuple;
+import me.megov.emc.t004.entities.IPvXTupleWithMask;
 import me.megov.emc.t004.exceptions.T004BadDataException;
 
 /**
  *
  * @author megov
  */
-
 public class CustomerGenerator {
 
     public static final int START_V4_NETWORK = 0x40000000;
@@ -46,185 +46,112 @@ public class CustomerGenerator {
     private final int v6Count;
     private final List<String> holder = new ArrayList<>();
 
-/*    public class IPv4WithMask {
+    public class TopGenParams {
 
-        int ipv4 = 0;
-        int mask = 0;
+        int maskMul = 0;
+        int maskAdd = 0;
+        long highAnd = 0;
+        int highShift = 0;
+        boolean ipv4 = false;
 
-        public IPv4WithMask(int _ipv4, int _mask) {
-            ipv4 = _ipv4;
-            mask = _mask;
+        public TopGenParams(boolean _ipv4, int _maskMul, int _maskAdd, long _highAnd, int _highShift) {
+            this.ipv4 = _ipv4;
+            this.maskMul = _maskMul;
+            this.maskAdd = _maskAdd;
+            this.highAnd = _highAnd;
+            this.highShift = _highShift;
         }
     }
-  */
-    
-    public class IPvXWithMask {
 
-        IPvXTuple addr = new IPvXTuple(0, 0);
-        int mask = 0;
-
-        public IPvXWithMask(IPvXTuple _addr, int _mask) {
-            addr = _addr;
-            mask = _mask;
-        }
-        
-        public IPvXRange getRange() throws T004BadDataException {
-            return new IPvXRange(addr.getLowerBound(mask),
-                                 addr.getUpperBound(mask));
-        }
-        
-        @Override
-        public String toString() {
-            return addr.toString()+"/"+mask;
-        }
-        
-    }
-    
     public CustomerGenerator(int _v4Count, int _v6Count) {
         this.v4Count = _v4Count;
         this.v6Count = _v6Count;
     }
-    
-    public int getRandomV4Subnet(
+
+    public int getRandomSubnet(
             int _level,
             int _counter,
-            IPvXWithMask _parent,
+            IPvXTupleWithMask _parent,
             List<String> _holder,
             HashSet<String> _duplicates,
+            TopGenParams _par,
             PrintStream _ps) throws T004BadDataException {
         int counter = _counter;
         String tab = "";
         if (_level > 0) {
             tab = new String(new char[_level]).replace('\0', '.');
         }
-        
         //random address
-        IPvXTuple randAddr = new IPvXTuple(Math.round(Math.random()*0xFFFFFFFFL) & 0xFFFFFFFFL);
-
+        IPvXTuple randAddr;
+        if (_par.ipv4) {
+            randAddr = IPvXTuple.getV4RandomAddr();
+        } else {
+            randAddr = IPvXTuple.getV6RandomAddr();
+        }
         //new network mask for this level
-        int thisMask = _parent.mask + _level;
-        
+        int thisMask = _parent.getMask() + _level;
         //return, if we overcome the most small /32 subnets
-        if (thisMask > 32) {
+        if (thisMask > _par.maskMul) {
             return counter;
         }
 
         //create new subnet address 
-        IPvXTuple randSubnetAddr = randAddr;
-        if (_parent.mask > 0) {
-            randSubnetAddr = randAddr.getHostPart(_parent.mask);
-        }
-        
-        IPvXTuple fullAddr = _parent.addr.orWith(randSubnetAddr.getLowerBound(thisMask));
-        
+        IPvXTuple randSubnetAddr = randAddr.getHostPart(_parent.getMask());
+        IPvXTuple fullAddr = _parent.getAddr().orWith(randSubnetAddr.getLowerBound(thisMask));
+
         //check for dublications among siblings
         String netSpec = fullAddr.toString() + "/" + thisMask;
         if (_duplicates.contains(netSpec)) {
             return counter;
         }
         _duplicates.add(netSpec);
-        
+
         //form result customer string and store it
-        String line = String.format("%-20s", netSpec) + " CUST" + String.format("%04d", counter) + "." + _level;
+        String line = netSpec + " CUST" + String.format("%04d", counter) + "." + _level;
         counter++;
         holder.add(line);
-        
+
         //how many children will be for the newly generated subnet
         int randChild = (int) (CHILDREN_FACTOR - Math.round(Math.random() * _level));
-        
+
         //debug report if stream is supplied
-        if (_ps != null) _ps.println(tab + line + " CH:" + randChild);
-        
+        if (_ps != null) {
+            _ps.println(tab + line + " CH:" + randChild);
+        }
+
         //recursive children generation
         if (randChild > 0) {
             HashSet<String> dups = new HashSet<>();
             for (int i = 0; i < randChild; i++) {
-                counter = getRandomV4Subnet(_level + 1, counter,
-                        new IPvXWithMask(fullAddr, thisMask),
+                counter = getRandomSubnet(_level + 1, counter,
+                        new IPvXTupleWithMask(fullAddr, thisMask),
                         _holder,
                         dups,
+                        _par,
                         _ps);
             }
         }
         return counter;
     }
 
-    
-    public int getRandomV6Subnet(int _level,
-            int _counter,
-            IPvXWithMask _parent,
-            List<String> _holder,
-            HashSet<String> _duplicates,
-            PrintStream _ps) throws T004BadDataException {
-
-        int counter = _counter;
-        String tab = "";
-        if (_level > 0) {
-            tab = new String(new char[_level]).replace('\0', '.');
-        }
-        
-        //random address part inside a parent network mask
-        IPvXTuple randAddr = new IPvXTuple(); //IPvXTuple.getRandomV6Segment(_parent.addr, _parent.mask);
-        //new network mask for this level
-        int thisMask = _parent.mask + _level; //WAS (int) Math.round(Math.random() * (31 -_parent.mask)) + 1  + ;
-        
-        //return, if we overcome the most small /126 subnets
-        if (thisMask > 126) {
-            return counter;
-        }
-        
-        //create new subnet address 
-        IPvXTuple randSubnetAddr = new IPvXTuple(randAddr);
-        if (_parent.mask > 0) {
-            //randSubnetAddr = IPvXTuple.getHostPart(randAddr, _parent.mask);
-            throw new T004BadDataException("NEED TO REIMPLEMENT!");
-        }
-        /*
-        long fullAddr = IPv4Helper.toLowerBound(_parent.ipv4 | randSubnetAddr, thisMask);
-        
-        //check for dublications among siblings
-        String netSpec = IPv4Helper.getV4AddressString(fullAddr) + "/" + thisMask;
-        if (_duplicates.contains(netSpec)) {
-            return counter;
-        }
-        _duplicates.add(netSpec);
-        
-        //form result customer string and store it
-        String line = String.format("%-20s", netSpec) + " CUST" + String.format("%04d", counter) + "." + _level;
-        counter++;
-        holder.add(line);
-        
-        //how many children will be for the newly generated subnet
-        int randChild = (int) (CHILDREN_FACTOR - Math.round(Math.random() * _level));
-        
-        //debug report if stream is supplied
-        if (_ps != null) _ps.println(tab + line + " CH:" + randChild);
-        
-        //recursive children generation
-        if (randChild > 0) {
-            HashSet<String> dups = new HashSet<>();
-            for (int i = 0; i < randChild; i++) {
-                counter = getRandomV4Subnet(_level + 1, counter,
-                        new IPv4WithMask((int) fullAddr, thisMask),
-                        _holder,
-                        dups,
-                        _ps);
-            }
-        }*/
-        return counter;
-    }
-    
-    private List<IPvXWithMask> getTopLevelV4Networks(int _count) throws T004BadDataException {
-        ArrayList<IPvXWithMask> topNetworks = new ArrayList<>(_count);
+    private void generateTopLevelNetworks(int _count,
+            List<IPvXTupleWithMask> _nelist,
+            TopGenParams _par) throws T004BadDataException {
+        _nelist.clear();
         int iterations = 0;
-        while ((topNetworks.size()<_count) && (iterations<100000)) {
-            int thisMask = (int)Math.round(Math.random()*6)+2;
-            long randAddr = Math.round(Math.random()*0xFEL+1) << 24;
-            IPvXTuple addr = new IPvXTuple(randAddr);
-            IPvXRange range = new IPvXRange(addr.getLowerBound(thisMask), 
-                                            addr.getUpperBound(thisMask));
+        while ((_nelist.size() < _count) && (iterations < 100000)) {
+            int thisMask = (int) Math.round(Math.random() * _par.maskMul) + _par.maskAdd;
+            IPvXTuple addr;
+            long randAddr = Math.round(Math.random() * _par.highAnd + 1) << _par.highShift;
+            if (_par.ipv4) {
+                addr = new IPvXTuple(randAddr);
+            } else {
+                addr = new IPvXTuple(randAddr, 0L);
+            }
+            IPvXRange range = new IPvXRange(addr.getLowerBound(thisMask),
+                    addr.getUpperBound(thisMask));
             boolean isIntersected = false;
-            for (IPvXWithMask net:topNetworks) {
+            for (IPvXTupleWithMask net : _nelist) {
                 IPvXRange netRange = net.getRange();
                 if (range.isIntersectWith(netRange)) {
                     isIntersected = true;
@@ -232,45 +159,47 @@ public class CustomerGenerator {
                 }
             }
             if (!isIntersected) {
-                topNetworks.add(new IPvXWithMask(addr.getLowerBound(thisMask), thisMask));
+                _nelist.add(new IPvXTupleWithMask(addr.getLowerBound(thisMask), thisMask));
             }
             iterations++;
         }
-        return topNetworks;
     }
-    
-    public List<String> generate(PrintStream _ps) throws T004BadDataException {
+
+    private int processTopLevelNetwork(int _custNo,
+            PrintStream _ps,
+            List<IPvXTupleWithMask> _genList,
+            HashSet<String> _dups) {
+        int currNo = _custNo;
+        for (IPvXTupleWithMask ipm : _genList) {
+            String netSpec = ipm.getAddr().toString() + "/" + ipm.getMask();
+            _dups.add(netSpec);
+            String line = String.format("%-20s", netSpec)
+                    + " CUST" + String.format("%04d", currNo++) + ".0";
+            holder.add(line);
+            if (_ps != null) {
+                _ps.println(line);
+            }
+        }
+        return currNo;
+    }
+
+    public List<String> generate(PrintStream _ps,
+            List<IPvXTupleWithMask> _topV4Networks,
+            List<IPvXTupleWithMask> _topV6Networks
+    ) throws T004BadDataException {
         holder.clear();
         int custNo = 0;
         HashSet<String> dups = new HashSet<>();
-        
-        List<IPvXWithMask> topNetworks =  getTopLevelV4Networks(v4Count);
-        for (IPvXWithMask ipm:topNetworks) {
-            String netSpec = ipm.addr.toString() + "/" + ipm.mask;
-            dups.add(netSpec);
-            String line = String.format("%-20s", netSpec) + 
-                                        " CUST"+String.format("%04d", custNo++) + ".0";
-            holder.add(line);
-            if (_ps != null) _ps.println(line);
+        generateTopLevelNetworks(v4Count, _topV4Networks, new TopGenParams(true, 6, 2, 0xFF, 24));
+        generateTopLevelNetworks(v6Count, _topV6Networks, new TopGenParams(false, 16, 16, 0xFFFFFFFFFFL, 32));
+        custNo = processTopLevelNetwork(custNo, _ps, _topV4Networks, dups);        
+        custNo = processTopLevelNetwork(custNo, _ps, _topV6Networks, dups);
+        for (IPvXTupleWithMask ipm : _topV4Networks) {
+            custNo = getRandomSubnet(1, custNo, ipm, holder, dups, new TopGenParams(true, 32, 0, 0, 0), _ps);
         }
-        for (IPvXWithMask ipm:topNetworks) {        
-            custNo = getRandomV4Subnet(1,
-                    custNo,
-                    ipm,
-                    holder,
-                    dups,
-                    _ps);
+        for (IPvXTupleWithMask ipm : _topV6Networks) {
+            custNo = getRandomSubnet(1, custNo, ipm, holder, dups, new TopGenParams(false, 128, 0, 0, 0), _ps);
         }
-/*
-        for (int i = 0; i < v6Count; i++) {
-            custNo = getRandomV6Subnet(level,
-                    custNo,
-                    new IPv6WithMask(new IPvXTuple(START_V6_NETWORK_HI, START_V6_NETWORK_LO), START_V6_NETMASK_BITS),
-                    holder,
-                    dups,
-                    _ps);
-        } 
-*/
         return holder;
     }
 
@@ -291,4 +220,4 @@ public class CustomerGenerator {
         }
         return isBadTreeOrdering;
     }
-    }
+}

@@ -45,8 +45,8 @@ task genLarge(type: JavaExec) {
 task genSmall(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.MainGenerator';
-  args = ["/data", "3", "10000000"]
-//  debug = true;
+  args = ["/data", "2", "10000000"]
+  //debug = true;
 }
 
 task genMid(type: JavaExec) {

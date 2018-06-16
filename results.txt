@@ -1,0 +1,39 @@
+----------------
+Done reading in 14155 millis, got 1 038 708 customers
+Done reading log in 651618 millis, got 199 990 731 log lines
+Got 33 460 customer records for 1 000 000 000 000 bytes
+Writing results to /data/report.txt.SEQ0.BUF.TRM
+Total traffic accounted: 1 000 000 000 000
+----------------
+Done reading in 13939 millis, got 1 038 708 customers
+Done reading log in 960780 millis, got 199 990 731 log lines
+Got 33 460 customer records for 1 000 000 000 000 bytes
+Writing results to /data/report.txt.PAR1.NIO.TRM
+Total traffic accounted: 1 000 000 000 000
+----------------
+Done reading in 14370 millis, got 1 038 708 customers
+Done reading log in 558752 millis, got 199 990 731 log lines
+Got 33 460 customer records for 1 000 000 000 000 bytes
+Writing results to /data/report.txt.PAR2.NIO.TRM
+Total traffic accounted: 1 000 000 000 000
+----------------
+Done reading in 13128 millis, got 1 038 708 customers
+Log size: 6 326 042 739 baseSegmentSize: 1 581 510 684
+Done reading log in 477755 millis, got 199 990 731 log lines
+Got 33 460 customer records for 1 000 000 000 000 bytes
+Writing results to /data/report.txt.PAR4.NIO.TRM
+Total traffic accounted: 1 000 000 000 000
+----------------
+Done reading in 12120 millis, got 1 038 708 customers
+Log size: 6 326 042 739 baseSegmentSize: 790 755 342
+Done reading log in 453648 millis, got 199 990 731 log lines
+Got 33 460 customer records for 1 000 000 000 000 bytes
+Writing results to /data/report.txt.PAR8.NIO.TRM
+Total traffic accounted: 1 000 000 000 000
+
+
+MORE DIGITS IN cust*
+NO SEARCH IN V6 MORE THAN 5-6 DEPTH LEVELS DEEP?
+
+
+

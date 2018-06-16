@@ -246,5 +246,24 @@ public class IPvXTuple implements Comparable<IPvXTuple> {
         }
         return sb.toString();
     }
+    
+    public static IPvXTuple getV4RandomAddr() {
+        return new IPvXTuple(Math.round(Math.random()*0xFFFFFFFFL) & 0xFFFFFFFFL);
+    }
+    
+    public static IPvXTuple getV6RandomAddr() {
+        long randHi = Math.round(Math.random() * Long.MAX_VALUE) + Math.round(Math.random() * 256);
+        long randLo = Math.round(Math.random() * Long.MAX_VALUE) + Math.round(Math.random() * 256);
+        boolean invertHi = Math.random() > 0.5;
+        boolean invertLo = Math.random() > 0.5;
+
+        if (invertHi) {
+            randHi = -randHi;
+        }
+        if (invertLo) {
+            randLo = -randLo;
+        }
+        return new IPvXTuple(randHi, randLo);
+    }
 
 }
