@@ -50,15 +50,17 @@ public class CustomerTreeHelper {
     }
  
     public static List<String> generateCustomerList(
-            int _v4custCount, 
-            int _v6custCount, 
+            int _childrenFactor,
+            SubNetworkGenParams _subnetv4Params,
+            SubNetworkGenParams _subnetv6Params,
             List<IPvXTupleWithMask> _v4nelist,
             List<IPvXTupleWithMask> _v6nelist,
             PrintStream _debugOut) throws T004Exception {
         //Customer generator gives us ordered list, where parents always before childred
         //It can be wrong fot actual input file.
-        List<String> custStrings = new CustomerGenerator(_v4custCount, _v6custCount)
-                .generate(_debugOut, _v4nelist, _v6nelist);
+        List<String> custStrings = 
+                new CustomerGenerator(_childrenFactor)
+                .generate(_debugOut, _v4nelist, _subnetv4Params, _v6nelist, _subnetv6Params);
         //So to make things worse, we textually sort our customer list for to break
         //parent-child ordering.
         Collections.sort(custStrings);
@@ -66,14 +68,16 @@ public class CustomerTreeHelper {
     }
 
     public static Customer generateCustomerTree(
-            int _v4custCount, 
-            int _v6custCount, 
+            int _childrenFactor,            
+            SubNetworkGenParams _subnetv4Params,
+            SubNetworkGenParams _subnetv6Params,
             Customer _custRoot, 
             PrintStream _debugOut) throws T004Exception {
         return generateCustomerTree(
                 generateCustomerList(
-                        _v4custCount, 
-                        _v6custCount,
+                        _childrenFactor,
+                        _subnetv4Params, 
+                        _subnetv6Params,
                         new ArrayList<>(),
                         new ArrayList<>(),
                         _debugOut), 

@@ -24,6 +24,7 @@ import me.megov.emc.t004.exceptions.T004BadDataException;
 import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.exceptions.T004FormatException;
 import me.megov.emc.t004.helpers.CustomerTreeHelper;
+import me.megov.emc.t004.helpers.SubNetworkGenParams;
 import me.megov.emc.t004.parsers.CustomerParser;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -175,13 +176,31 @@ public static String[] unorderedGoodCustometrs = new String[]{
     
     @Test
     public void testGeneratedCustomerTreeWithTRM() throws T004Exception {
-        Customer custroot = CustomerTreeHelper.generateCustomerTree(10, 15, new Customer("", new TreeRangeMapLookupFactory()), System.out);
+        SubNetworkGenParams v4Params = new SubNetworkGenParams(true)
+                .setMaxNetworkMaskValue(32)
+                .setTopLevelCustomerCount(10);
+        SubNetworkGenParams v6Params = new SubNetworkGenParams(false)
+                .setMaxNetworkMaskValue(128)
+                .setTopLevelCustomerCount(10);        
+        Customer custroot = CustomerTreeHelper
+                .generateCustomerTree(2, v4Params, v6Params,
+                        new Customer("", new TreeRangeMapLookupFactory()), 
+                        System.out);
         checkCustomerTree(custroot);
     }
     
     @Test
     public void testGeneratedCustomerTreeWithAUT() throws T004Exception {
-        Customer custroot = CustomerTreeHelper.generateCustomerTree(10, 15, new Customer("", new AugmentedTreeLookupFactory()), System.out);
+        SubNetworkGenParams v4Params = new SubNetworkGenParams(true)
+                .setMaxNetworkMaskValue(32)
+                .setTopLevelCustomerCount(10);
+        SubNetworkGenParams v6Params = new SubNetworkGenParams(false)
+                .setMaxNetworkMaskValue(128)
+                .setTopLevelCustomerCount(10);
+        Customer custroot = CustomerTreeHelper
+                .generateCustomerTree(2, v4Params, v6Params,
+                        new Customer("", new AugmentedTreeLookupFactory()),
+                        System.out);
         checkCustomerTree(custroot);
     }
     

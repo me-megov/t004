@@ -60,7 +60,8 @@ public class Main {
     
     private static LogProcessorResult processLog(
                                                LogProcessor _logProcessor, 
-                                               LogProcessorParams _params) throws Exception {
+                                               LogProcessorParams _params,
+                                               ProcessingStatsResults _statResults) throws Exception {
         
         long ctStart = System.currentTimeMillis();
         
@@ -69,46 +70,62 @@ public class Main {
         if (!(fl.exists() && fl.isFile())) {
             throw new IOException("No log file: " + fl.getCanonicalPath());
         }
+        _statResults.setLogFileSize(fl.length());
         
         LogProcessorResult lpResult = _logProcessor.process(_params);
         
         long ctEnd = System.currentTimeMillis();
+        _statResults
+                .setLogProcessingMillis(ctEnd-ctStart)
+                .setStats(lpResult.getStats())
+                .setResultTotalTrafficRecords(lpResult.getTrafficResult().size());
         System.out.println(
                     String.format("Done reading log in %d millis, got %s log lines",
-                    ctEnd - ctStart,
-                    DF.format(lpResult.getStats().getTotalLines()))
+                    _statResults.getLogProcessingMillis(),
+                    DF.format(_statResults.getStats().getTotalLines()))
                     );
-        System.out.println("Got "+DF.format(lpResult.getTrafficResult().size())+
-                          " customer records for "+DF.format(lpResult.getStats().getTotalTraffic())+" bytes");
+        System.out.println("Got "+DF.format(_statResults.getResultTotalTrafficRecords())+
+                          " customer traffic records for "+DF.format(lpResult.getStats().getTotalTraffic())+" bytes");
         return lpResult;
     }
     
     private static Customer readCustomerTree(String _dataDir, 
                                              String _fileName, 
-                                             RangeLookupFactory _lookupFactory) throws Exception {
+                                             RangeLookupFactory _lookupFactory,
+                                             ProcessingStatsResults _statResults) throws Exception {
         long ctStart = System.currentTimeMillis();
         File custfile = new File(_dataDir, _fileName);
         System.out.println("Reading customer tree from " + custfile.getCanonicalPath());
         if (!(custfile.exists() && custfile.isFile())) {
             throw new IOException("No customer file: " + _fileName);
         }
+        _statResults.setCustFileSize(custfile.length());
         Customer custroot = Customer.getRootCustomer(_lookupFactory);
         CustomerParser custParser = new CustomerParser();
         BufferedReader custReader = new BufferedReader(new FileReader(custfile));
+        try {
         List<CustomerLine> listCl = custParser.readFrom(custReader);
         for (CustomerLine cl: listCl) custroot.addSubCustomer(cl);
         long ctEnd = System.currentTimeMillis();
+        _statResults.setCustCount(custroot.getSubCustomersCount());
+        _statResults.setCustLevels(custroot.getMaxDepth());
+        _statResults.setCustReadingMillis(ctEnd - ctStart);
         System.out.println(
-                    String.format("Done reading in %d millis, got %s customers",
-                    ctEnd - ctStart,
-                    DF.format(custroot.getSubCustomersCount()))
+                    String.format("Done reading in %d millis, got %s customers in %d levels max",
+                    _statResults.getCustReadingMillis(),
+                    DF.format(_statResults.getCustCount()),
+                    _statResults.getCustLevels())
                     );        
         return custroot;
+        } finally {
+            custReader.close();
+        }
     }
 
     private static long storeOutput(String _dataDir,
                                     String _fileName,
-                                    LogProcessorResult _lpResult) throws Exception {
+                                    LogProcessorResult _lpResult,
+                                    ProcessingStatsResults _statResults) throws Exception {
         long soStart = System.currentTimeMillis();
         long totalTraffic = _lpResult.getStats().getTotalUnknownTraffic();
         File resultfile = new File(_dataDir, _fileName);
@@ -131,13 +148,38 @@ public class Main {
         } finally {
             bw.close();
         }
+        long soEnd = System.currentTimeMillis();
+        _statResults
+                .setResultStoredMillis(soEnd-soStart)
+                .setResultTotalBytesStored(totalTraffic);
         tempfile.renameTo(resultfile);  
         return totalTraffic;
     }
     
+    
+    private static void storeStats(String _dataDir,
+                                   String _fileName,
+                                   ProcessingStatsResults _statResults) throws Exception {
+        File statfile = new File(_dataDir, _fileName);
+        System.out.println("Writing stats to " + statfile.getCanonicalPath());
+        PrintWriter bw = new PrintWriter(new FileWriter(statfile));
+        try {
+            if ( !statfile.canWrite() ) {
+                throw new IOException("Cant write stats file: " + _fileName);
+            }        
+            ProcessingStatsWriter.writeStats(_statResults, bw);
+            bw.flush();
+        } finally {
+            bw.close();
+        }
+    }
+    
+    
+    
     public static void main(String[] args) {
         
         String cfgFileName = null;
+        ProcessingStatsResults stats = new ProcessingStatsResults();
 
         if ((args.length > 0) && (args[0].startsWith("--cfgFile"))) {
             String arr[] = args[0].split("=");
@@ -168,7 +210,7 @@ public class Main {
           
             Class logProcessorClass;
             Class logProcessorTaskClass = null;
-            RangeLookupFactory lookupFactory = new TreeRangeMapLookupFactory();
+            RangeLookupFactory lookupFactory;
             
             if ("TRM".equals(logProcessorLookupName)) {
                 lookupFactory = new TreeRangeMapLookupFactory();
@@ -203,7 +245,8 @@ public class Main {
             
             Customer custRoot = readCustomerTree(dataDir,
                     cfg.getValue(ConfigParam.CUSTOMERFILE),
-                    lookupFactory
+                    lookupFactory,
+                    stats
             );
             
             LogProcessor lp = (LogProcessor)logProcessorClass.newInstance();
@@ -216,17 +259,32 @@ public class Main {
                .setTaskCount(cfg.getIntValue(ConfigParam.TASK_COUNT))
                .setTaskClass(logProcessorTaskClass);
             
-            LogProcessorResult lpResult = processLog(lp, lpp);
+            LogProcessorResult lpResult = processLog(lp, lpp, stats);
             
+            String resultFileName = cfg.getValue(ConfigParam.OUTPUTFILE);
+            if (cfg.getIntValue(ConfigParam.IS_DEBUG)>0) {
+                resultFileName+="."+logProcessorName+taskCount+
+                                "."+logProcessorTaskName+
+                                "."+logProcessorLookupName;
+                }
             long totalTraffic = storeOutput(
                     outDir, 
-                    cfg.getValue(ConfigParam.OUTPUTFILE)+
-                            "."+logProcessorName+taskCount+
-                            "."+logProcessorTaskName+
-                            "."+logProcessorLookupName,
-                    lpResult
+                    resultFileName,
+                    lpResult,
+                    stats
                     );
+            
             System.out.println("Total traffic accounted: " + DF.format(totalTraffic));
+            
+            if (cfg.getIntValue(ConfigParam.IS_SAVE_STATS)>0) {
+                String statFileName = cfg.getValue(ConfigParam.STATSFILE);
+                if (cfg.getIntValue(ConfigParam.IS_DEBUG)>0) {
+                    statFileName+="."+logProcessorName+taskCount+
+                                    "."+logProcessorTaskName+
+                                    "."+logProcessorLookupName;
+                    storeStats(dataDir, statFileName, stats);
+                }
+            }
 
         } catch (Throwable th) {
             System.err.println(th.getMessage());

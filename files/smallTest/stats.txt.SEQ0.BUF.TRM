@@ -1,0 +1,12 @@
+Total processing time in millis:     171
+Log processing performance in rec/s: 56171,00
+Log processing time in millis:       35
+Source log lines:      1966
+Source log file size:  62810
+Source total traffic:  10000000
+Result lines:          57
+Result total traffic:  10000000
+Traffic accounting:    SUCCESS
+Customers count:       228
+Customers file size:   9221
+Customers tree depth:  15

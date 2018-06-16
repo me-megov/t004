@@ -31,6 +31,7 @@ import me.megov.emc.t004.exceptions.T004Exception;
 import me.megov.emc.t004.helpers.CustomerGenerator;
 import me.megov.emc.t004.helpers.CustomerTreeHelper;
 import me.megov.emc.t004.helpers.LogGenerator;
+import me.megov.emc.t004.helpers.SubNetworkGenParams;
 
 /**
  *
@@ -46,16 +47,25 @@ public class MainGenerator {
 
     public static List<String> generateCustomers(
             int _custCount, 
+            int _childFactor,
             Path _outputFile, 
             List<IPvXTupleWithMask> _v4netList,
             List<IPvXTupleWithMask> _v6netList,
             PrintStream _debugOut) throws T004Exception, IOException {
         long ctStart = System.currentTimeMillis();
+        
+        SubNetworkGenParams v4Params = new SubNetworkGenParams(true)
+                .setMaxNetworkMaskValue(32)
+                .setTopLevelCustomerCount(_custCount);
+        SubNetworkGenParams v6Params = new SubNetworkGenParams(false)
+                .setMaxNetworkMaskValue(128)
+                .setTopLevelCustomerCount(_custCount);             
         System.out.println("Generating " + _custCount + " top-customers to " + _outputFile.toString());
         List<String> custStrings = CustomerTreeHelper
                 .generateCustomerList(
-                        _custCount, 
-                        _custCount, 
+                        _childFactor,
+                        v4Params,
+                        v6Params,
                         _v4netList,
                         _v6netList,
                         _debugOut);
@@ -67,6 +77,12 @@ public class MainGenerator {
                     DF.format(custStrings.size()),
                     DF.format(_outputFile.toFile().length()))
             );
+            System.out.println(
+                    String.format("v4 tree depth=%d, v6 tree depth=%d",
+                    v4Params.getMaxLevel(),
+                    v6Params.getMaxLevel())
+            );
+            
         return custStrings;
     }
 
@@ -120,12 +136,13 @@ public class MainGenerator {
     public static void main(String[] args) {
         String outputDirectory;
         int custCount;
+        int childFactor;
         long totalTraffic;
 
         try {
-            if (args.length != 3) {
+            if (args.length != 4) {
                 System.err.println("Usage: ");
-                System.err.println("  java -cp <app.jar> me.megov.emc.t004.Maingenerator <outputDir> <topCustomersCount> <totalTrafficInBytes>");
+                System.err.println("  java -cp <app.jar> me.megov.emc.t004.Maingenerator <outputDir> <topCustomersCount> <childFactor> <totalTrafficInBytes>");
                 System.err.println("  The app will generate a random customer tree with ");
                 for (String s:args) System.err.println("ARG="+s);
                 System.exit(1);
@@ -134,12 +151,13 @@ public class MainGenerator {
             
             outputDirectory = args[0];
             custCount = Integer.parseInt(args[1],10);
-            totalTraffic = Long.parseUnsignedLong(args[2], 10);
+            childFactor = Integer.parseInt(args[2],10);
+            totalTraffic = Long.parseUnsignedLong(args[3], 10);
 
             Path custPath = Paths.get(outputDirectory, "customers.txt");
             ArrayList<IPvXTupleWithMask> v4netList = new ArrayList<>();
             ArrayList<IPvXTupleWithMask> v6netList = new ArrayList<>();
-            generateCustomers(custCount, custPath, v4netList, v6netList, System.out);
+            generateCustomers(custCount, childFactor, custPath, v4netList, v6netList, null);
 
             Path logPath = Paths.get(outputDirectory, "log.txt");
             generateLog(totalTraffic, logPath, v4netList, v6netList, System.out);

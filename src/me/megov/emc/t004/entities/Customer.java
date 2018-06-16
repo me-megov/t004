@@ -55,6 +55,23 @@ public class Customer {
         return name;
     }
     
+    public int getMaxDepth() {
+            return getMaxDepth(0);
+    }
+    
+    private int getMaxDepth(int _currLevel) {
+        int thisLevel = _currLevel;
+        Iterator<Entry<String,Customer>> it = subCustomers.entrySet().iterator();
+        while (it.hasNext()) {
+            Entry<String,Customer> ent = it.next();
+            int childLevel = ent.getValue().getMaxDepth(_currLevel+1);
+            if (childLevel>thisLevel) thisLevel = childLevel;
+        }
+        return thisLevel;
+    }
+    
+    
+    
     public Customer getCustomerByAddr(IPvXTuple _addr) throws T004BadDataException {
         Customer custByRange = lookup.getEntry(_addr);
         if (custByRange==null) {

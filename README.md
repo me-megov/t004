@@ -9,12 +9,13 @@ using Netbeans 8.1 as IDE and Gradle 2.14 as a build system.
 
 The project has two implementations of network address range to customer lookup table.
 The first is based on TreeRangeMap (TRM) from Google's Guava, so there is a single 
-external dependency from Guava 23. The second one is based on my own implementation 
-of augmented binary tree (AUT).
+external dependency from Guava 23. The second one is based on my own partial 
+implementation of augmented binary tree (AUT).
 
-The TRM implementaion is faster, use mature code base, but I still don't make it
-work right with IPv6. The AUT implementation is buggy, incomplete and untested, but
-IPv6 is possible 'by design'.
+The TRM implementaion is faster, use mature code base, but initially have some 
+problems with Range objects, holding 128 bit IPv6 address as a Long+Long pair 
+incapsulated inside a class. The AUT implementation is maybe buggy, somewhat 
+incomplete and untested, but IPv6 in a Long+Long representation is working.
 
 ### IPvX address processing
 
@@ -26,80 +27,98 @@ addresses are represented internally as standard overlayed IPv4 over IPv6 (::FFF
 There are two log processor engines:
 
  - SEQ - simple sequential log scan. It is 'most common denominator' for performance
-and the simplest method to analyze traffic log. But it's not the slowest one.
+and the simplest method to analyze traffic log. But, surprisingly, it's not the 
+slowest one.
 
  - PAR - an attempt to parallelize log processing by dividing log file into some 
 line-rounded segments and process them in parallel. All segment processing results 
-are merged after finishing processing tasks into a complete report file and produce
-total statistics record. This approach can utilize more CPU cores and also can utilize
-modern solid state storges or storage arrays, than can support parallel reading.
+are merged together after tasks are finished. Merged traffic records list stored 
+into a report file along with some statistics. The statistics can also be saved
+into file for analisys. The parallel approach helps to utilize more than one CPU 
+core and also produce parallel IO streams, than can successfully processed by
+modern solid state storages or storage arrays, as they naturally support parallel 
+reading.
 
 ### IO methods
 
-The SEQ log processing does not need a complicated IO code, so the standard BufferedReader
-approach is the best effort.
+The SEQ log processing does not need a complicated IO code, so using the standard 
+BufferedReader is the best effort.
 
 Parallel log processing, on the other side, needs more complicated IO processing.
 In this project are implemented the next IO methods:
 
- - BUF - standard buffered reading from a file. With sequental scan it works ideally.
-With parallel buffered reading of multiple segments of random access file, it is 
-completely broken. Read ahead by BufferedReader moves the real file position inside a 
-file segment more further, than the data, that actually returned back to a higher levels.
+ - BUF - standard buffered reading from a file. With sequental scan it works very well.
+On the other side, parallel buffered read of multiple segments in a random access
+file is completely broken. Read ahead capability of BufferedReader moves the real 
+file position inside a file segment far forward, than the data, that actually 
+returned to a higher levels. So, the processing loose some log records between segments.
+Thant why, there are no tests of PAR processing with BUF IO method.
 
- - NIO - NIO/ByteBuffer low level approach. Just now have suboptimal char-by-char reading 
-procedure, so singlethread performance is -20% worse, than SEQ:BUF. But have good 
-parallelized results - up to 3 times faster than sequental on i7-920 with 4/8 parallel tasks
+ - NIO - NIO/ByteBuffer low level approach. Just now it has suboptimal char-by-char 
+reading procedure, so singlethread performance is -20% worse, than SEQ:BUF. 
+But NIO methos have good parallelized results - up to 3 times faster than sequental 
+on i7-920 with 4/8 parallel tasks.
 
- - MMAP - same as pt.2 but using memory mapping. Maybe could be faster than NIO, but it is
-uncompleted and untested yet.
+ - MMAP - same as pt.2 but using memory mapping. Maybe could be faster than NIO, 
+but it is stub and unimplemented yet..
 
 ## Starting up and running
 
 ### Overview
 
 Application is solely console based, its behavior is controlled by optionally
-supplied configuration file. Any parameter from configuration file can be overridden
-from command line to make a flexible usage scenarios possible. There are two main 
-parts compiled in single application: 
+supplied configuration file and a commanline parametera. Any parameter from 
+command line will override the value, specifies in configuration file.
+It makes a flexible usage scenarios possible. There are two main parts compiled 
+both into a single application: 
  - a traffic log processor, as stated in the excercise
  - a test data generator. 
 
-As the log processor have to analyze a huge amounts of data in both aspects of traffic 
-log size and customer network definitions, the test data generator is a 'must have' tool
-for all software suite.
+The log processor developed to analyze a huge amounts of data in both aspects of traffic 
+log size and customer network definitions, so the test data generator is a 'must have' 
+tool for debugging and performance measures.
 
 ### Test generator
 
 The test generator usage:
 
 ```
-java -cp <test.jar> <mainClass> <dataDir> <topCustCount> <trafficInBytes>
+java -cp <test.jar> <mainClass> <dataDir> <topCustCount> <childFactor> <trafficInBytes>
 ```
  - test.jar - full or relative path to compiled application JAR
  - mainClass = me.megov.emc.t004.MainGenerator
  - dataDir - full or relative path to output directory for generated test data
  - topCustCount - number of top-level customers
+ - childFactor - int [2-7] value, how many childs will be generated for a customer
  - trafficInBytes - total traffic in bytes for all test data
 
 The more convenient way is to run test generator from the Gradle environment. 
 There are three predefined generator profiles, that have their appropriate Gradle task names:
 
- - genSmall - 2 top-level customers, 10Mb of traffic
- - genMid - 10 top-level customers, 100Gb of traffic
- - genLarge - 100 top-level customers, 1Tb of traffic
+ - genSmall - 3+3 top-level customers (v4+v6), 10Mb of traffic, childFactor=3
+ - genMid - 10+10 top-level customers (v4+v6), 100Gb of traffic, childFactor=4
+ - genLarge - 75+75 top-level customers (v4+v6), 1Tb of traffic, childFactor=4
 
-Customer tree is generated in random/recursive manner, there is no way to exactly
+Customer tree is generated in random/recursive manner, so there is no way to exactly
 limit customer count. Using top-level customer count parameter, we can indirectly
-control the customer tree size. Total amount of traffic, specified as the generator's
-parameter is a simple and convenient method to quickly check up validity of log analysis.
+control the customer tree size. ChildFactor is the maximum number of subCustomers,
+that can be generated to a single customer. The smaller values produce more 'thin'
+tree, the larger values more 'fatter' customer tree.
 
-The traffic is distributed by a random size packets (<10000b), each of them are 
-assigned to a some random address from customer tree. For simulating unknown customer
-traffic, 1/1000 of packets are designated to completely random address, not belonging
-to a customer tree addresses. This method can support generation of a quite large,
-but random data volumes. The 'small' test case is really small (<100k og size), 
-the 'Mid' test case produce >300Mb log size, the 'Large' - >3.5Gb log size.
+The customer names are generated with a counter, V4/V6 prefix and a postfix, that
+denotes the tree level at the generation time. It helps to check a tree consistency
+at an analysis stage. 
+
+Total amount of traffic, specified as the generator's parameter is a total bytes
+that are used to generate a traffic log. The traffic is distributed by a random 
+size packets (<10000b), each packet are assigned to some random, but still belonging 
+to a customer tree address. For simulating 'unknown customer' traffic, 1/1000 
+of packets are designated to completely random address. This method can support 
+generation of a quite large, but random data volumes. 
+
+The 'Small' test case is really small (<100k of size, <1000 customers), the 'Mid'
+test case produce >600Mb log size and 5-6k customers, the 'Large' - >5Gb log size
+and 40-50k customers.
 
 *The default input and output directory, as specified in exercise is '/data' and it 
 have to exist and to be writable by user prior running any exercise code.*
@@ -125,7 +144,9 @@ Parameters with their default values:
  - --logFile=log.txt            - Traffic log filename
  - --outputDir=/data            - Output directory for report
  - --outputFile=report.txt      - Report filename
- - --isDebug=1                  - Enable (1) or disable (0) debug output
+ - --isDebug=0                  - Enable (1) or disable (0) debug output
+ - --statsFile=stats.txt	- Statistics report filename
+ - --isSaveStats=0              - Enable (1) or disable (0) save statistics report
  - --reportInterval=1000000     - Progress reporting interval (in processed records)
  - --taskCount=2                - Task count for parallel processing
  - --logProcessor=SEQ           - Log processor (SEQ-sequental, PAR-parallel)
@@ -145,18 +166,43 @@ There log processing options are also have their appropriate Gradle task names:
  - runPar1Aut - one task, parallel processing with NIO, AUT lookup
  - runPar[2,4,8,12]Aut - two/four/eight/twelve parallel task, NIO, AUT
 
+All Gradle tasks are configured with debug and save statistics report enabled.
+With enabled debug, the real output filenames (report and stats) are postfixed 
+with log processor type, task count, task class and lookup table type.
+It helps to gather results and stats from different run with different profiles.
+
+
 ## Configuration file
 
-A confiuration file can be optionall supplied to define default values.
-The parameter names are the same as above, but without double-dashes.
-The '=' character delimits parameter name and parameter value. Any parameter, 
-provided in command line takes over that supplied in configuration file.
+A confiuration file can be optionally supplied in command line to define 
+default values. The parameter names are the same as specified above, but 
+in configuration file they used without double-dashes. The '=' character 
+delimits parameter name and parameter value. Any parameter, provided in 
+command line takes over that supplied in configuration file.
+
+## Performance
+
+### Common considerations
+
+After analysing processing performance in many different configurations, 
+some initial and obvious considerations are appears:
+ - BUF IO method is faster than NIO in singlethreaded environment, my own
+current 'readLine from ByteBuffer' implementation is dumb and slow.
+ - AUT is slower than TRM. Yes, Google's code is better! ;)
+ - PAR IO method effectively increase the performance, when the task count
+is equals the CPU core count, the performance is the best. Further increasing
+task count do not give any effect. Of course, the disk subsystem have to
+do well parallel IO processing. I use SSD so in was not an issue.
+
+### Detailed test results
+
+
+
+
+
 
 # IMPORTANT, BUT UNIMPLEMENTED YET:
- - IPv6. The stopping pit is that 128bit values in Long+Long IPvXTuple class 
-can't produce valid Guava's Range, and can't participate TreeRangeMap. Maybe it
-will be solved by AUT implementation.
- - there are no implementation of IPv6 generators and 
- - there is no parsing v4-into-v6 string representation with both colons and dots.
+ - there is no parsing v4-into-v6 string representation with both colons
+and dots, like '::FFFF:10.10.10.10'
  - no Docker containerization. Due to lack of time.
 

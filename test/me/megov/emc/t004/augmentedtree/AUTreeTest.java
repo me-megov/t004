@@ -82,10 +82,6 @@ public class AUTreeTest {
     @After
     public void tearDown() {
     }
-
-    
-
-    
     
     @Test
     public void testSomeMethod() {
