@@ -182,27 +182,49 @@ command line takes over that supplied in configuration file.
 
 ## Performance
 
+### Testbed hardware
+
+The workstation with i7-920, 12G RAM, 80Gb SSD Intel DC S3510.
+OS: Debian Stretch 9.4, x86_64.
+Java: Oracle JDK 1.8 upd 101
+
 ### Common considerations
 
-After analysing processing performance in many different configurations, 
-some initial and obvious considerations are appears:
+After analysing performance in different configurations, there are some 
+considerations:
  - BUF IO method is faster than NIO in singlethreaded environment, my own
 current 'readLine from ByteBuffer' implementation is dumb and slow.
  - AUT is slower than TRM. Yes, Google's code is better! ;)
- - PAR IO method effectively increase the performance, when the task count
-is equals the CPU core count, the performance is the best. Further increasing
-task count do not give any effect. Of course, the disk subsystem have to
+ - PAR IO method effectively increase the performance. When the tasks count
+matches the CPU core count, the performance is the best. Further increasing
+tasks count do not give any effect. Of course, the disk subsystem have to
 do well parallel IO processing. I use SSD so in was not an issue.
 
 ### Detailed test results
 
+The baseline is formed by SEQ:BUF implementation. The large test case give 
+processing speen of 380k log records per second. Due to unoptimized inner 
+loop in NIO, the singlethreaded performance with TRM was 286k log records
+per second. My own AUT implementation is slower - 247k log records per 
+second.
+Parallel log processing largely improves the results of NIO backend. Using 
+two tasks it reaches 567k in TRM and 471k in AUT. Further increasing tasks 
+count are also increases the perfomance: 4 tasks gives 973/727k log records 
+(TRM/AUT), 8 tasks gives 1200/945k log records (TRM/AUT). 
+The test stats reports are included in 'files/*/stats.txt.*'
 
+## Docker containerization
 
+To containerize the example I use gradle-docker-plugin v3.3.4 from bmushko.
+The appropriate Gradle tasks areж
+ - dckCreateDockerfile - creates Dockerfile
+ - dckBuildImage - builds a complete image. This task is not dependant of 
+Gradle's build task, so you have to do "gradle build" before running any
+docker tasks.
+ - dckCreateContainer - creates the container
+ - dckLog - run the whole installation in docker with loogin out stdout.
 
-
-
-# IMPORTANT, BUT UNIMPLEMENTED YET:
+## IMPORTANT, BUT UNIMPLEMENTED YET:
  - there is no parsing v4-into-v6 string representation with both colons
 and dots, like '::FFFF:10.10.10.10'
- - no Docker containerization. Due to lack of time.
 
