@@ -237,7 +237,7 @@ public class Main {
                 throw new T004FormatException("Bad log processor in config: "+logProcessorName);
             }
 
-            System.out.println("Using log processor:"+logProcessorName+
+            System.out.println("Using log processor:"+logProcessorName+taskCount+
                                ", log fetcher task:"+logProcessorTaskName+
                                ", log lookup:"+logProcessorLookupName);
             System.out.println("Using data directory: " + dataDir);

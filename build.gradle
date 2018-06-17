@@ -1,13 +1,27 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:3.3.4'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+
+import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.container.*
 
 mainClassName = 'me.megov.emc.t004.Main';
 
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'me.megov.emc.t004.Main'
+    ext.mainClass = "$mainClassName"
 }
 
 repositories {
+    jcenter()
     mavenCentral()
 }
 
@@ -34,6 +48,24 @@ dependencies {
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '23.0'
 }
+
+
+jar {
+  manifest {
+    attributes(
+      'Main-Class': "$mainClassName",
+      'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+    )
+    }
+}
+
+
+task copyToLib(type: Copy) {
+    into "$buildDir/libs"
+    from configurations.runtime
+}
+
+build.dependsOn(copyToLib)
 
 
 task genLarge(type: JavaExec) {
@@ -137,6 +169,48 @@ task runMMap(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   main = 'me.megov.emc.t004.Main';
   args = ["--isSaveStats=1", "--isDebug=1", "--logProcessor=PAR", "--logProcessorTask=MMAP"]
+}
+
+
+task dckCreateDockerfile(type: Dockerfile) {
+    destFile = project.file('Dockerfile')
+    from 'openjdk:8-jdk-alpine'
+    println 'Hello ' + project.name
+    addFile('build/libs', '/app')
+    addFile('files/runner.sh', '/app/runner.sh')
+    runCommand('mkdir /data')
+    volume '/data'
+    environmentVariable('JAVA_OPTS', '""')
+    entryPoint('sh', '-c', '/app/runner.sh /app/'+jar.archiveName)
+}
+
+task dckBuildImage(type: DockerBuildImage) {
+    dependsOn dckCreateDockerfile
+    inputDir = dckCreateDockerfile.destFile.parentFile
+    tag = "$project.name:latest"
+}
+
+task dckCreateContainer(type: DockerCreateContainer) {
+    dependsOn dckBuildImage
+    targetImageId { dckBuildImage.getImageId() }
+    volumes = [ '/data' ]
+    binds = [ 'data' : '/data' ]
+}
+
+task dckStart(type: DockerStartContainer) {
+    dependsOn dckCreateContainer
+    targetContainerId { dckCreateContainer.getContainerId() }
+}
+
+
+task dckLog(type: DockerLogsContainer) {
+    dependsOn dckStart
+    targetContainerId { dckStart.getContainerId() }
+    follow = true
+    tailAll = true
+    onNext { message ->
+        logger.quiet message.toString() // each log message from the container will be passed as it's made available
+    }
 }
 
 
