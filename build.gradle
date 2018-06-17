@@ -175,7 +175,7 @@ task runMMap(type: JavaExec) {
 task dckCreateDockerfile(type: Dockerfile) {
     destFile = project.file('Dockerfile')
     from 'openjdk:8-jdk-alpine'
-    println 'Hello ' + project.name
+    println 'Hello ' + project.projectDir
     addFile('build/libs', '/app')
     addFile('files/runner.sh', '/app/runner.sh')
     runCommand('mkdir /data')
@@ -194,7 +194,7 @@ task dckCreateContainer(type: DockerCreateContainer) {
     dependsOn dckBuildImage
     targetImageId { dckBuildImage.getImageId() }
     volumes = [ '/data' ]
-    binds = [ 'data' : '/data' ]
+    binds = [ "$project.projectDir/data" : '/data' ]
 }
 
 task dckStart(type: DockerStartContainer) {
